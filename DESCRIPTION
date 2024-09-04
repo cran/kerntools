@@ -1,7 +1,7 @@
 Package: kerntools
 Type: Package
 Title: Kernel Functions and Tools for Machine Learning Applications
-Version: 1.0.1
+Version: 1.0.2
 Authors@R: person("Elies", "Ramon", email = "eramon@everlyrusher.com",
     role = c("aut","cre","cph"),  comment = c(ORCID = "0000-0002-7953-8115"))
 Description: Kernel functions for diverse types of data (including, but not
@@ -21,8 +21,8 @@ VignetteBuilder: knitr
 Depends: R (>= 2.10)
 Language: en-US
 NeedsCompilation: no
-Packaged: 2024-08-22 12:35:40 UTC; syko
+Packaged: 2024-09-04 07:47:20 UTC; syko
 Author: Elies Ramon [aut, cre, cph] (<https://orcid.org/0000-0002-7953-8115>)
 Maintainer: Elies Ramon <eramon@everlyrusher.com>
 Repository: CRAN
-Date/Publication: 2024-08-27 16:30:06 UTC
+Date/Publication: 2024-09-04 09:50:02 UTC

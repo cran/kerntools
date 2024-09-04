@@ -76,12 +76,12 @@ head(showdata)
 #> 5            Yes
 #> 6             No
 KD <- Dirac(showdata[,1:4])
-dirac_kpca <- kPCA(KD,plot=c(1,2),title="Survey", name_leg = "Liked the new 
-                   show?", y=showdata$Liked.new.show, ellipse=0.66)
+dirac_kpca <- kPCA(KD,plot=c(1,2),title="Survey", name_leg = "Liked the show?", 
+                   y=showdata$Liked.new.show, ellipse=0.66)
 dirac_kpca$plot
 ```
 
-<img src="man/figures/README-example-1.png" alt="Dirac kernel PCA." width="100%" />
+<img src="man/figures/README-example-1.png" alt="Dirac kernel PCA." width="65%" />
 
 You can customize your kernel PCA plot: apart from picking which
 principal components you want to display (in the example: PC1 and PC2),

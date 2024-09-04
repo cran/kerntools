@@ -7,7 +7,8 @@ our_pca <-  kPCA(K=K,center = FALSE,plot=1:2)
 our_proj <- as.matrix(round(our_pca$projection[,1:4],digits=4))
 our_rot <- kPCA_imp(X,center=FALSE,secure=FALSE)
 
-signs <- c(1,-1,-1,1)
+quocient <- apply( our_proj/prcomp_proj,2,unique)
+signs <- rep(1,4)
 names(signs) <- c("PC1", "PC2", "PC3", "PC4" )
 
 our_pca3 <-  kPCA(K=RBF(X,g=0.05),center = TRUE)
@@ -16,7 +17,7 @@ our_pca3 <-  kPCA(K=RBF(X,g=0.05),center = TRUE)
 # Test kernel PCA
 test_that("Normal (kernel = linear) PCA works", {
   expect_equal( abs(our_proj),abs(prcomp_proj))
-  expect_equal(apply(our_proj/prcomp_proj,2,unique),signs)
+  expect_equal(abs(quocient),signs)
 })
 
 
@@ -49,7 +50,7 @@ test_that("Kernel PCA works", {
 # Test contribution to PCs
 test_that("kPCA_imp works", {
   prcomp_rot <- prcomp_pca$rotation
-  expect_equal(prcomp_rot  ,t(signs*our_rot$loadings))
+  expect_equal(prcomp_rot  ,t(quocient*our_rot$loadings))
 
   our_rot2 <- kPCA_imp(X, center=TRUE,secure=FALSE)
   expect_lt(max(our_rot2$center),1e-15)
