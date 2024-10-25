@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Elies Ramon" />
+
+
+<title>Kernel functions</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Kernel functions</h1>
+<h4 class="author">Elies Ramon</h4>
+
+
+
+<div id="purpose-of-this-document" class="section level2">
+<h2>Purpose of this document</h2>
+<p>When first knowing about the <code>kerntools</code> package, or
+perhaps after downloading it, you may have asked yourself some of these
+questions:</p>
+<ul>
+<li>What are kernel functions and matrices?</li>
+<li>Why are they useful?</li>
+<li>How to compute them using <code>kerntools</code>?</li>
+</ul>
+<p>This document is meant to answer exactly that. The first section, <a href="#introduction">Introduction</a>, deals with the basic concepts
+regarding the kernel approach. Subsequent sections review all kernels
+implemented in <code>kerntools</code> one by one, highlighting their
+most important traits and giving some examples of use.</p>
+</div>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<div id="informal-definition" class="section level3">
+<h3>Informal definition</h3>
+<p>Kernel methods are all those machine learning methods that use kernel
+functions. Let <span class="math inline">\(X = {x_1, x_2, ... ,
+x_N}\)</span> be a dataset of <em>N</em> objects of any type
+(real-valued, graphs, rankings, matrices, categorical data, etc.). The
+kernel function evaluates all possible pairs of objects, which are then
+stored in a kernel matrix with dimension <em>NxN</em>:</p>
+<p><span class="math display">\[\mathbf{K_{ij}} = k(x_i , x_j
+)\]</span></p>
+<p>Intuitively, we can understand kernels as functions <span class="math inline">\(k(x_i , x_j )\)</span> that measure the similarity
+between <span class="math inline">\(x_i\)</span> and <span class="math inline">\(x_j\)</span>. Generally speaking, all kernels are
+similarity measures; however, not every similarity measure is a kernel:
+only those that generate proper kernel matrices. Kernel matrices are
+characterized by four properties: they are real-valued, squared,
+symmetric and PSD (positive semi-definite: all their eigenvalues are
+nonnegative). Thus, the kernel matrix <strong>K</strong>, and not the
+original dataset <em>X</em>, is the input data for our kernel method. In
+this approach, choosing a good kernel function is capital, because it’s
+the “lens” that the method will use to “see” the data.</p>
+</div>
+<div id="advantages" class="section level3">
+<h3>Advantages</h3>
+<p>If using kernels implies an “extra step” (computing
+<strong>K</strong>), why should we bother at all? Surely, it’s easier to
+use any other machine learning method and dealing directly with
+<em>X</em>, isn’t it? Well, the thing is that the kernel approach has
+some advantages:</p>
+<ul>
+<li><p>Most machine learning methods require a numeric input (some of
+them, like Random Forests, also can accept categorical data). Usually,
+if our dataset is different from the typical real-valued matrix
+<strong>X</strong> with <em>D</em> features (variables), we will have to
+recode it somehow. But in kernel methods, the objects in <em>X</em> are
+never represented explicitly (only via their pairwise similarities),
+which has an interesting consequence: kernels can handle data types that
+are not standard. Instead, the challenge is using (or designing) kernels
+that extract valuable information from specific data types or problems.
+This requires a notion of what is considered “similar” in that given
+context.</p></li>
+<li><p>Kernel functions can be combined or “custom-tailored” for a
+specific problem. For instance, previous knowledge about the problem can
+be encoded explicitly into the kernel. This is facilitated by the fact
+that kernel design is modular in nature: kernels can be combined. For
+example, the linear combination of kernel matrices is another kernel
+matrix.</p></li>
+<li><p>When using nonlinear kernel functions, methods that were
+originally linear (for instance: Principal Components Analysis or PCA)
+“become” nonlinear. In some sense, we “trick” the method: it
+<em>still</em> works in a linear way, but as its input data has been
+transformed by a nonlinear function, the output it produces is
+nonlinear.</p></li>
+<li><p>Curse of dimensionality: contrarily to a lot of other methods,
+this is not a big issue when working with kernels. In fact, when dealing
+with <em>NxD</em> datasets where <em>N &lt;&lt; D</em>, kernels can
+decrease the computational burden if used cleverly, as the method will
+deal with a kernel matrix of dimension <em>NxN</em>.</p></li>
+</ul>
+</div>
+<div id="feature-space" class="section level3">
+<h3>Feature space</h3>
+<p>The most basic kernel function is the dot product of two real vectors
+(see <a href="#linear-kernel">Linear kernel</a>). This definition is
+<em>very</em> important, because all kernels can be written as inner
+products in some space:</p>
+<p><span class="math display">\[x → φ(x)\]</span> <span class="math display">\[k(x_i , x_j ) = &lt;φ(x_i),φ(x_j)&gt;\]</span>
+<span class="math inline">\(φ(x)\)</span> maps an object from the
+original (input) space to the so-called <em>feature space</em>. This
+feature space typically has a higher dimension than the original space
+(other times it has the same dimension) and it’s endowed with an inner
+product. However, all the process happens “under the hood”: the kernel
+function uses this mapping without telling so (recall that the objects’
+explicit representations are never used). Sometimes, even knowing the
+feature space associated to a given kernel can be tricky. However, this
+take avoids the computational cost of 1) explicitly mapping the dataset
+into feature space (which sometimes can be <em>very</em> high
+dimensional) + 2) computing the inner product there: the kernel
+conflates the two in a single step, which is known as the <em>kernel
+trick</em>. By the way, this also allows solving nonlinear problems
+using linear methods: the kernel takes the original data onto a higher
+dimensional space where it can be operated in a linear way with inner
+products. (A visual example of this can be found <a href="https://es.m.wikipedia.org/wiki/Archivo:Kernel_trick_idea.svg">here</a>).</p>
+</div>
+</div>
+<div id="kernels-for-real-vectors" class="section level2">
+<h2>Kernels for real vectors</h2>
+<p>Now we introduce the kernels in <code>kerntools</code> that deal with
+real vectors. There are <em>a lot</em> of kernels that can handle this
+data, but here we are going to focus only on those implemented in this
+package. By real vectors I refer the typical continuous dataset
+<strong>X</strong> with <em>N</em> samples in rows and <em>D</em>
+continuous variables (or features) in columns. Thus, for each sample we
+have <span class="math inline">\(\mathbf{x} \in {\rm
+I\!R}^D\)</span>.</p>
+<div id="linear-kernel" class="section level3">
+<h3>Linear kernel</h3>
+<div id="definition" class="section level4">
+<h4>Definition</h4>
+<p>The Linear kernel is the dot product of two real vectors:</p>
+<p><span class="math display">\[Linear(\mathbf{x_i},\mathbf{x_j}) =
+\mathbf{x_i}^T\mathbf{x_j}\]</span></p>
+<p>It can take positive values, negative values, and even be zero.
+Obviously, it has a linear nature. Thus, if we use it in a “kernelized”
+machine learning method, the output will be the same that when using the
+non-kernelized method (for instance: linear kPCA is equivalent to
+standard PCA).</p>
+<p>The linear kernel is related to the cosine of the angle between two
+vectors, which is maximum when they share the same direction and 0 if
+they are perpendicular. Sometimes, is more easy to see the linear kernel
+as a “similarity score” if the cosine normalization is applied:</p>
+<p><span class="math display">\[Linear_{cosine}(\mathbf{x_i},\mathbf{x_j})  =
+\frac{\mathbf{x_i}^T\mathbf{x_j}}{\sqrt{\mathbf{x_i}^T\mathbf{x_i}}\sqrt{\mathbf{x_j}^T\mathbf{x_j}}}\]</span>
+This is also known as the “cosine similarity”. A score of 1 implies that
+<span class="math inline">\(\mathbf{x_i},\mathbf{x_j}\)</span> are
+equal, while the lower the score, the lower the similarity.</p>
+</div>
+<div id="feature-space-1" class="section level4">
+<h4>Feature space</h4>
+<p>This is the only kernel that fulfills that feature space = input
+space.</p>
+</div>
+<div id="usage" class="section level4">
+<h4>Usage</h4>
+<p>This kernel is suitable for typical numeric, continuous datasets
+(especially if you know in advance that your problem has a linear
+solution). For instance, if we work with the famous iris dataset:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">Linear</span>(iris[,<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>])</span></code></pre></div>
+<p>In general, however, it is recommended to standardize a dataset
+before presenting it to the linear kernel. Imagine that your features
+are very different in magnitude: for instance, if the range of feature 1
+is <span class="math inline">\([0.01,0.1]\)</span> and the range of
+feature 2 is <span class="math inline">\([10^2,10^3]\)</span>, feature 2
+will absolutely dominate the output of the kernel, even if this feature
+is almost irrelevant to the problem you want to solve. The reverse case
+arises when you want to <em>manually</em> prioritize some features over
+others (for example, because you have previous knowledge about your
+problem). In that case, you can weight them in advance, specifying your
+desired coefficients. For example:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">Linear</span>(iris[,<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>], <span class="at">coeff =</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">2</span>, <span class="dv">1</span><span class="sc">/</span><span class="dv">4</span>, <span class="dv">1</span><span class="sc">/</span><span class="dv">8</span>, <span class="dv">1</span><span class="sc">/</span><span class="dv">8</span>))</span></code></pre></div>
+<p>Cosine-normalization of the linear kernel can be done with:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">Linear</span>(iris[,<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>], <span class="at">cos.norm =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+</div>
+</div>
+<div id="rbf-kernel" class="section level3">
+<h3>RBF kernel</h3>
+<div id="definition-1" class="section level4">
+<h4>Definition</h4>
+<p>The Gaussian Radial Basis Function (RBF) kernel is regarded as the
+gold standard among kernels. Typically is written as:</p>
+<p><span class="math display">\[RBF(\mathbf{x_i},\mathbf{x_j}) =
+e^{-\gamma {||\mathbf{x_i}-\mathbf{x_j}||}^2}\]</span> It is immediately
+obvious that it is nonlinear. The output ranges between 0 and 1; again,
+the higher the RBF kernel value, the higher the similarity between <span class="math inline">\(\mathbf{x_i},\mathbf{x_j}\)</span>. The <span class="math inline">\({||\mathbf{x_i}-\mathbf{x_j}||}\)</span> term
+correspond to the Euclidean distance between two real vectors, while
+<span class="math inline">\(\gamma&gt;0\)</span> is a hyperparameter.
+There is an alternative definition of the RBF in some books or packages,
+where it has a “bandwidth” hyperparameter called <span class="math inline">\(\sigma&gt;0\)</span>. Don’t worry. The
+relationship between the two is: <span class="math inline">\(\gamma =
+\frac{1}{2\sigma^2}\)</span>.</p>
+<p>The RBF kernel is related to the linear kernel. This is because the
+inner product induces a L2 norm that, in real vectors, is equivalent to
+the Euclidean distance. But contrarily to the linear kernel, the RBF
+kernel is an universal approximator: it can be used to model any
+decision boundary. In this regard, <span class="math inline">\(\gamma\)</span> governs the “smoothness” of this
+kernel when adapting to data. The smaller the value, the more complex
+the resulting model, and the risk of overfitting is greater. Instead, if
+the value is too small, the decision boundary become very smooth and
+“linearized”, to the point that (with very large values) the RBF kernel
+starts behaving as the linear kernel.</p>
+</div>
+<div id="feature-space-2" class="section level4">
+<h4>Feature space</h4>
+<p>With this kernel, data is mapped onto an infinite-dimensional feature
+space. Several techniques to approximate it exist. For instance, <span class="math inline">\(φ(\mathbf{x})\)</span> can be computed via Taylor
+series expansion (more info in <a href="https://arxiv.org/abs/1109.4603">Explicit Approximations of the
+Gaussian Kernel</a>).</p>
+</div>
+<div id="usage-1" class="section level4">
+<h4>Usage</h4>
+<p>This kernel is perfectly fine for typical numeric, continuous
+datasets, especially if the solution to your problem is nonlinear. Here,
+you can see how to compute it with <code>kerntools</code> using the iris
+example dataset:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">RBF</span>(iris[,<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>], <span class="at">g=</span> <span class="fl">0.1</span>)</span></code></pre></div>
+<p>(Centering or not the dataset is irrelevant, but it is advisable to
+scale the variables by the their standard deviation before presenting
+the dataset to the RBF kernel. See <a href="#linear-kernel">Linear
+kernel</a> for more info.)</p>
+<p>Here, <code>RBF(...,g)</code> is the value of the hyperparameter
+gamma, which should be chosen by the user. There are some heuristics
+that may be useful for choosing a good value. In that respect,
+<code>kerntools</code> provides this handy function:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">estimate_gamma</span>(iris[,<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>])</span></code></pre></div>
+<p>(Remember that, in <code>kerntools</code>, the hyperparameter of the
+RBF kernel is <span class="math inline">\(\gamma\)</span>, not <span class="math inline">\(\sigma\)</span>.)</p>
+<p>Finally, <code>kerntools</code>’s implementation currently does not
+compute the feature space of the RBF kernel.</p>
+</div>
+</div>
+<div id="laplacian-kernel" class="section level3">
+<h3>Laplacian kernel</h3>
+<div id="definition-2" class="section level4">
+<h4>Definition</h4>
+<p>The Laplacian kernel is similar to the RBF kernel. However, instead
+of computing the L2 norm (Euclidean distance) between two real vectors,
+it uses the L1 norm:</p>
+<p><span class="math display">\[Laplacian(\mathbf{x_i},\mathbf{x_j}) =
+e^{-\gamma |\mathbf{x_i}-\mathbf{x_j}|}\]</span></p>
+<p>It ranges between 0 and 1. The higher the laplacian kernel value, the
+higher the similarity between <span class="math inline">\(\mathbf{x_i},\mathbf{x_j}\)</span>. The
+hyperparameter <span class="math inline">\(\gamma &gt; 0\)</span> has a
+similar role that in the RBF kernel. However, now its relationship to
+<span class="math inline">\(\sigma\)</span> is: <span class="math inline">\(\gamma = \frac{1}{\sigma}\)</span>. The
+hyperparameter governs how the laplacian kernel adapts to data, though
+using the L1 norm makes this kernel more “sharp” than the RBF
+kernel.</p>
+</div>
+<div id="usage-2" class="section level4">
+<h4>Usage</h4>
+<p>You can use this kernel with a typical numeric, continuous dataset,
+especially if the solution to your problem is nonlinear. An example of
+use with the famous iris dataset:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">Laplace</span>(iris[,<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>], <span class="at">g=</span> <span class="fl">0.1</span>)</span></code></pre></div>
+<p>Here, <code>Laplace(...,g)</code> is the value of the hyperparameter
+<span class="math inline">\(\gamma\)</span>, which should be chosen by
+the user. Centering or not the dataset is irrelevant, but it is
+advisable to scale the variables by the their standard deviation before
+presenting it to the laplacian kernel. See <a href="#linear-kernel">Linear kernel</a> for more info.</p>
+<p>Remember that in <code>kerntools</code>, the hyperparameter of the
+laplacian kernel is <span class="math inline">\(\gamma\)</span>, not
+<span class="math inline">\(\sigma\)</span>. Moreover,
+<code>kerntools</code>’s implementation right now does not compute the
+feature space of the laplace kernel.</p>
+</div>
+</div>
+</div>
+<div id="kernels-for-real-matrices" class="section level2">
+<h2>Kernels for real matrices</h2>
+<p>The following kernel works with data such as each sample is a real
+matrix (its entries are real numbers).</p>
+<div id="frobenius-kernel" class="section level3">
+<h3>Frobenius kernel</h3>
+<div id="definition-3" class="section level4">
+<h4>Definition</h4>
+<p>The Frobenius kernel of two matrices <span class="math inline">\(\mathbf{X_i},\mathbf{X_j}\)</span> with dimension
+<em>NxD</em> is defined as:</p>
+<p><span class="math display">\[Frobenius(\mathbf{X_i},\mathbf{X_j}) =
+tr(\mathbf{X_i} \mathbf{X_j}^T) = \sum_{n=1}^N
+\sum_{d=1}^D\mathbf{X}_{ind} \circ \mathbf{X}_{jnd}  \]</span> <span class="math inline">\(\circ\)</span> denotes the Hadamard product. It is
+an inner product and, thus, the Frobenius kernel is a sort of “linear
+kernel” for matrices. The result can be positive, negative or even zero.
+As always, the higher the kernel the higher the similarity between the
+two samples. This is understood more easily when the cosine
+normalization is applied:</p>
+<p><span class="math display">\[Frobenius_{cosine}(\mathbf{X_i},\mathbf{X_j})  =
+\frac{tr(\mathbf{X_i} \mathbf{X_j}^T)}{\sqrt{tr(\mathbf{X_i}
+\mathbf{X_i}^T)}\sqrt{tr(\mathbf{X_j} \mathbf{X_j}^T)}}\]</span></p>
+<p>A score of 1 implies that the two samples (matrices) are equal.</p>
+</div>
+<div id="feature-space-3" class="section level4">
+<h4>Feature space</h4>
+<p>The feature space of this kernel is straightforward. It can be
+obtained by vectorizing (converting into column vectors) each one of the
+matrices.</p>
+</div>
+<div id="usage-3" class="section level4">
+<h4>Usage</h4>
+<p>This kernel can be used to compare matrix-formatted information, for
+instance image data. It can be also used to compare the similarity
+between two kernel matrices. In <code>kerntools</code>, the Frobenius
+kernel can be called typing:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="do">### Let&#39;s suppose our samples come from three different matrix tables:</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>setosa <span class="ot">&lt;-</span> iris[iris<span class="sc">$</span>Species <span class="sc">==</span> <span class="st">&quot;setosa&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>versicolor <span class="ot">&lt;-</span> iris[iris<span class="sc">$</span>Species <span class="sc">==</span> <span class="st">&quot;versicolor&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>virginica <span class="ot">&lt;-</span> iris[iris<span class="sc">$</span>Species <span class="sc">==</span> <span class="st">&quot;virginica&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>matrices <span class="ot">&lt;-</span> <span class="fu">list</span>(setosa,versicolor,virginica)</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="fu">Frobenius</span>(matrices)</span></code></pre></div>
+<p>Cosine-normalization of the Frobenius kernel can be done with:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">Frobenius</span>(matrices, <span class="at">cos.norm =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p>and the feature space (cosine-normalized or not) can be recovered
+like this:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">Frobenius</span>(matrices, <span class="at">feat_space =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+</div>
+</div>
+</div>
+<div id="kernels-for-abundances-counts-or-frequencies" class="section level2">
+<h2>Kernels for abundances (counts or frequencies)</h2>
+<p>The following kernels deal with counts and frequency data, be it
+absolute or relative frequencies. This kind of data lives in datasets of
+dimension <em>NxD</em>, which (at first glance) may appear very similar
+to real data. However, some nuances should be taken into account. Count
+data consists in nonnegative integer vectors of dimension <em>D</em>
+<span class="math inline">\(\mathbf{x} \in {\rm I\!R}_{&gt;0}^D\)</span>
+that quantify the abundance of some trait or analyzed variable. This
+data has a non-symmetric distribution, a potentially large dynamic range
+(from zero up to millions) and, when the quantification is done by an
+instrument, other factors like upper and lower bounds on detection can
+be at play. Thus, zeroes may be ambiguous: they may signal an actual
+absence, or a quantity below the detection limit.</p>
+<p>Sometimes, counts or absolute frequencies are converted to relative
+frequencies. This data is usually called <em>compositional</em> and
+constitutes a specific category within abundance data. In that case, all
+samples (rows) sum to an arbitrary number (for instance 1, or 100). This
+data does not live in the positive real space <span class="math inline">\(\mathbf{x} \in {\rm I\!R}_{&gt;0}^D\)</span> but
+in the simplex, which is a <em>D - 1</em> subspace of it. This is
+important because the variables are <em>not</em> independent, but parts
+of a whole. Thus, increasing the abundance of a feature within a sample
+decreases the abundance of the rest.</p>
+<p>The kernels that follow are well known in some fields, like ecology,
+because of their relation to widespread diversity metrics: the
+Bray-Curtis dissimilarity and the Ruzicka distance.</p>
+<div id="bray-curtis-kernel" class="section level3">
+<h3>Bray-Curtis kernel</h3>
+<div id="definition-4" class="section level4">
+<h4>Definition</h4>
+<p>The Bray-Curtis kernel is defined as:</p>
+<p><span class="math display">\[ BCK(x_{i},x_{j}) = 2\frac{\sum_d
+min(x_{id},x_{jd})}{\sum_d(x_{id}+x_{jd})}\]</span> where <span class="math inline">\(x_{id}, x_{jd}\)</span> are two samples (that is:
+two rows of the dataset). It ranges between 0 and 1.</p>
+<!-- #### Feature space -->
+<!-- When using relative frequencies (all rows sum to 1), the Bray-Curtis kernel becomes: -->
+<!-- $$ BCK(x_{id},x_{jd}) =  \sum_d min(x_{id},x_{jd}) $$ -->
+<!-- for the feature space of this kernel see https://perso.crans.org/besson/publis/mva-2016/MVA_2015-16__Kernel_Methods__Homework__Besson_Clement_Zerbib.en.pdf-->
+</div>
+<div id="usage-4" class="section level4">
+<h4>Usage</h4>
+<p>This kernel is <span class="math inline">\(BCK = 1 - BCD\)</span>,
+where BCD is the Bray-Curtis dissimilarity (it is called “dissimilarity”
+because it is semimetric and, therefore, not a distance in the strict
+sense). It can be applied over counts and frequencies; however, the
+“correctness” of using directly this kernel over compositional data is
+disputed.</p>
+<p>In <code>kerntools</code>, it can be computed typing:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="do">### Our example dataset contains the bacterial abundance of *D* species in *N* soil samples.</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>data <span class="ot">&lt;-</span> soil<span class="sc">$</span>abund</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="fu">BrayCurtis</span>(data)</span></code></pre></div>
+</div>
+</div>
+<div id="ruzicka-kernel" class="section level3">
+<h3>Ruzicka kernel</h3>
+<div id="definition-5" class="section level4">
+<h4>Definition</h4>
+<p>The Ruzicka kernel (also known as: quantitative Jaccard, or min-max
+kernel) is defined as:</p>
+<p><span class="math display">\[ Ruzicka(x_{i},x_{j}) = \frac{\sum_d
+min(x_{id},x_{jd})}{\sum_dmax(x_{id}+x_{jd})}\]</span> where <span class="math inline">\(x_{id}, x_{jd}\)</span> are two samples (that is:
+two rows of the dataset). It is bounded between 0 and 1.</p>
+<!-- #### Feature space -->
+<!-- for the feature space of this kernel see https://perso.crans.org/besson/publis/mva-2016/MVA_2015-16__Kernel_Methods__Homework__Besson_Clement_Zerbib.en.pdf-->
+</div>
+<div id="usage-5" class="section level4">
+<h4>Usage</h4>
+<p>The Ruzicka kernel is related to the quantitative Jaccard distance,
+aka Ruzicka distance, in the same manner as the Bray-Curtis kernel is
+related to the Bray-Curtis dissimilarity. The Ruzicka distance is
+rank-order similar to BCD, but it fulfills the conditions to be a
+metric. It is also related to the Jaccard kernel (which is introduced in
+the <a href="#jaccard-kernel">Jaccard kernel</a> subsection) for sets or
+presence/absence data.</p>
+<p>It can be applied over counts and frequencies; however, the
+“correctness” of using directly this kernel over compositional data is
+disputed.</p>
+<p>In <code>kerntools</code>, it can be computed typing:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="do">### Our example dataset contains the bacterial abundance of *D* species in *N* soil samples.</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>data <span class="ot">&lt;-</span> soil<span class="sc">$</span>abund</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="fu">Ruzicka</span>(data)</span></code></pre></div>
+</div>
+</div>
+</div>
+<div id="kernels-for-categorical-data" class="section level2">
+<h2>Kernels for categorical data</h2>
+<p>Categorical data consist on qualitative variables that can take a
+finite number of values (called classes, modalities, categories, or
+levels). Within this package, “categorical data” refers to nominal data
+whose categories don’t have a meaningful order, in contrast with ordinal
+data. The typical categorical dataset is a matrix <em>X</em> with
+<em>N</em> samples and <em>D</em> categorical variables or features. (In
+R, “data.frames” having columns of class “factor” can be used for this
+kind of data).</p>
+<div id="dirac-kernel" class="section level3">
+<h3>Dirac kernel</h3>
+<div id="definition-6" class="section level4">
+<h4>Definition</h4>
+<p>First we define the Overlap kernel over a single categorical variable
+as:</p>
+<p><span class="math display">\[x_{id}=x_{jd}  \Leftrightarrow  Overlap(x_{id},x_{jd})
+= 1\]</span> <span class="math display">\[x_{id} \neq
+x_{jd}  \Leftrightarrow  Overlap(x_{id},x_{jd}) = 0\]</span></p>
+<p>where <span class="math inline">\(x_{id},x_{jd}\)</span> are two
+samples and <em>D = 1</em>. This is the most basic categorical kernel,
+akin in a way to the linear kernel for continuous data. From there, we
+can define the Dirac kernel over multivariate categorical data as the
+linear combination of the Overlap kernel’s evaluations:</p>
+<p><span class="math display">\[ Dirac(x_{i},x_{j}) =  \sum_d c_d
+Overlap(x_{id},x_{jd})\]</span> The coefficients <span class="math inline">\(c_d&gt;0\)</span> can be all 1 (and then, the
+Dirac kernel is simply the sum of the Overlap kernel evaluations),
+<em>1/D</em> (so the Dirac kernel is the mean), or may be used to weight
+differently the variables (for example, because you have previous
+knowledge about your problem). When the coefficients are all set to
+<em>1/D</em>, the values for the Dirac kernel range between 0 and 1, the
+1 meaning that the two samples are equal, and 0 that they are completely
+different. This is equivalent to computing the “sum” Dirac kernel and
+then cosine-normalizing it. When custom coefficients are used but <span class="math inline">\(\sum_d c_d=1\)</span>, this output of this kernel
+is a weighted average bounded between 0 and 1 (thus, trying to
+cosine-normalize it is useless).</p>
+</div>
+<div id="feature-space-4" class="section level4">
+<h4>Feature space</h4>
+<p>We can map our data onto the feature space of the Overlap kernel via
+one-hot-encoding. That is: the map <span class="math inline">\(φ(x)\)</span> recodes a categorical variable
+(using the R nomenclature, “factor”) with <em>L</em> levels into
+<em>L</em> dummy variables (each one representing a given level) that
+can be 0 or 1. For instance, if we have a variable that can take three
+levels (“A”, “B” and “C”):</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>cat_feat <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">var=</span><span class="fu">factor</span>(<span class="fu">sample</span>(LETTERS[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>],<span class="dv">10</span>,<span class="at">replace =</span> <span class="cn">TRUE</span>)))</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="fu">rownames</span>(cat_feat) <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span></span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>cat_feat</span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="co">#&gt;    var</span></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="co">#&gt; 1    B</span></span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a><span class="co">#&gt; 2    C</span></span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a><span class="co">#&gt; 3    A</span></span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a><span class="co">#&gt; 4    A</span></span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a><span class="co">#&gt; 5    C</span></span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a><span class="co">#&gt; 6    B</span></span>
+<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a><span class="co">#&gt; 7    B</span></span>
+<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a><span class="co">#&gt; 8    B</span></span>
+<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a><span class="co">#&gt; 9    A</span></span>
+<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a><span class="co">#&gt; 10   B</span></span></code></pre></div>
+<p>the feature space for the Overlap kernel is:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="fu">dummy_data</span>(cat_feat)</span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="co">#&gt;    var_A var_B var_C</span></span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a><span class="co">#&gt; 1      0     1     0</span></span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="co">#&gt; 2      0     0     1</span></span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a><span class="co">#&gt; 3      1     0     0</span></span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a><span class="co">#&gt; 4      1     0     0</span></span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="co">#&gt; 5      0     0     1</span></span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a><span class="co">#&gt; 6      0     1     0</span></span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a><span class="co">#&gt; 7      0     1     0</span></span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a><span class="co">#&gt; 8      0     1     0</span></span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a><span class="co">#&gt; 9      1     0     0</span></span>
+<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a><span class="co">#&gt; 10     0     1     0</span></span></code></pre></div>
+<p>The feature space for the Dirac kernel results of “concatenating” the
+feature spaces for all <em>D</em> categorical variables. If the weights
+<span class="math inline">\(c_d \neq 1\)</span>, then data in feature
+space should be scaled accordingly. For instance, if <span class="math inline">\(c_d = 1/D\)</span> for all weights, which (as
+stated before) is the same than cosine-normalize the Dirac kernel, then
+the feature space is normalized to unit length.</p>
+</div>
+<div id="usage-6" class="section level4">
+<h4>Usage</h4>
+<p>In <code>kerntools</code>, we need a <em>NxD</em> dataset of class
+“matrix” (2-d dimensional array) that contains only characters, or
+instead a dataset of class “data.frame” (with all entries = “character”,
+or columns = “factor”). <code>showdata</code> is an example dataset that
+meets this requirements. The Dirac kernel can be called doing:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">Dirac</span>(showdata)</span></code></pre></div>
+<p>Moreover, if we want to compute the feature space too, we can
+type:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="fu">Dirac</span>(showdata,<span class="at">feat_space =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p>By default <code>Dirac(...,comp = &quot;sum&quot;)</code>; that is, all
+coefficients <span class="math inline">\(c_d\)</span> are set to 1. If
+we want the Dirac kernel computed as the mean of the Overlap kernel
+evaluations, we can do <code>Dirac(...,comp = &quot;mean&quot;)</code>. Instead,
+to have the average weighting according to some coefficients, we can
+do:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>coeffs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">8</span>,<span class="dv">1</span><span class="sc">/</span><span class="dv">4</span>,<span class="dv">1</span><span class="sc">/</span><span class="dv">4</span>,<span class="dv">1</span><span class="sc">/</span><span class="dv">4</span>,<span class="dv">1</span><span class="sc">/</span><span class="dv">8</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a><span class="fu">Dirac</span>(showdata, <span class="at">comp =</span> <span class="st">&quot;weighted&quot;</span>,  <span class="at">coeff=</span>coeffs)</span></code></pre></div>
+<p>The feature space returned by this function will change accordingly
+to the coefficients chosen. Of course,
+<code>Dirac(...,comp = &quot;mean&quot;)</code> is the same than doing:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a>coeffs <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">ncol</span>(showdata),<span class="fu">length</span>(showdata))</span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a><span class="fu">Dirac</span>(showdata, <span class="at">comp =</span> <span class="st">&quot;weighted&quot;</span>,  <span class="at">coeff=</span>coeffs)</span></code></pre></div>
+</div>
+</div>
+</div>
+<div id="kernels-for-sets" class="section level2">
+<h2>Kernels for sets</h2>
+<p>A set <em>S</em> is a collection of different objects (characters,
+numbers, strings, … even other sets). We call <em>universe</em> to the
+set of all objects we want to consider in a given problem. The objects
+of <em>S</em> are called their <em>elements</em>, and we denote as <span class="math inline">\(|S|\)</span> the size of the set: that is, the
+number of elements it contains.</p>
+<div id="intersect-kernel" class="section level3">
+<h3>Intersect kernel</h3>
+<div id="definition-7" class="section level4">
+<h4>Definition</h4>
+<p>Imagine that we have a dataset (size <em>N</em>) such as each sample
+is a set: <span class="math inline">\(S_1,...,S_N\)</span>. The most
+simple kernel for this data is the Intersect kernel:</p>
+<p><span class="math display">\[Intersect(S_i,S_j)=  |S_i \cap S_j|
+\]</span> that is, the size of the two sets’ shared elements. This is
+akin to the linear kernel for continuous data (see the “Feature space”
+subsection below). This kernel ranges from 0 (the sets are completely
+different) to any positive number. In general higher values indicate
+higher similarity; however, some sets may be bigger (that is: they
+contain more elements) than others. You can use the cosine-normalization
+to remove the size effect and have a result that is bounded between 0
+and 1:</p>
+<p><span class="math display">\[Intersect_{cosine}(S_i,S_j)=  \frac{|S_i
+\cap S_j|}{\sqrt{|S_i|·|S_j|}}\]</span></p>
+<p>From there, we can consider a multivariate case: each sample has
+several (<em>D</em>) variables or features that happen to be sets. As we
+have done with the Dirac kernel, we can do a linear combination of the
+Intersect kernel’s evaluations to produce a “multivariate” kernel:</p>
+<p><span class="math display">\[ Intersect_{multi}(S_{i},S_{j})
+=  \sum_{d=1}^{D} c_d Intersect(S_{id},S_{jd})\]</span></p>
+<p>The coefficients <span class="math inline">\(c_d&gt;0\)</span> can be
+all 1 (and then, this multivariate kernel is simply the sum of the
+Intersect kernel evaluations), <em>1/D</em> (so the Intersect-multi
+kernel is the mean of evaluations), or may be used to weight differently
+the variables (for example, because you have previous knowledge about
+your problem). In this last case, the Intersect-multi kernel is a lineal
+combination of the Intersect kernel’s evaluations. When the coefficients
+are all set to <em>1/D</em> and we also perform a cosine normalization
+over the univariate evaluations, the values for the Intersect-multi
+kernel range between 0 and 1, the 1 meaning that the two samples are
+equal, and 0 that they are completely different.</p>
+</div>
+<div id="feature-space-5" class="section level4">
+<h4>Feature space</h4>
+<p>We can map our data onto the feature space of the Intersect kernel
+via a sort of one-hot-encoding. In this case, the map <span class="math inline">\(φ(S)\)</span> recodes a set coming from a universe
+with <em>L</em> elements into <em>L</em> dummy variables (each one
+representing a given level) that can be 1, if a given element <em>l</em>
+is present in the set <em>S</em>, or 0 if it is absent. For example:</p>
+<p><strong>Favorite colors of 3 people:</strong></p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a>universe <span class="ot">&lt;-</span>  <span class="fu">c</span>(<span class="st">&quot;blue&quot;</span>,<span class="st">&quot;green&quot;</span>,<span class="st">&quot;lightblue&quot;</span>,<span class="st">&quot;orange&quot;</span>,<span class="st">&quot;purple&quot;</span>,<span class="st">&quot;red&quot;</span>,<span class="st">&quot;white&quot;</span>,<span class="st">&quot;yellow&quot;</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>person1 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">6</span>, <span class="dv">8</span>)</span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a>person2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">8</span>)</span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a>person3 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>,  <span class="dv">6</span>)</span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a><span class="fu">list</span>(<span class="at">person1=</span>universe[person1],<span class="at">person2=</span>universe[person2],<span class="at">person3=</span>universe[person3])</span>
+<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a><span class="co">#&gt; $person1</span></span>
+<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a><span class="co">#&gt; [1] &quot;green&quot;  &quot;red&quot;    &quot;yellow&quot;</span></span>
+<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb18-9"><a href="#cb18-9" tabindex="-1"></a><span class="co">#&gt; $person2</span></span>
+<span id="cb18-10"><a href="#cb18-10" tabindex="-1"></a><span class="co">#&gt; [1] &quot;blue&quot;   &quot;yellow&quot;</span></span>
+<span id="cb18-11"><a href="#cb18-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb18-12"><a href="#cb18-12" tabindex="-1"></a><span class="co">#&gt; $person3</span></span>
+<span id="cb18-13"><a href="#cb18-13" tabindex="-1"></a><span class="co">#&gt; [1] &quot;green&quot;     &quot;lightblue&quot; &quot;red&quot;</span></span></code></pre></div>
+<p>The data mapped onto the feature space for this kernel is:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a>colors <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>,<span class="at">nrow=</span><span class="dv">3</span>,<span class="at">ncol=</span><span class="fu">length</span>(universe))</span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a><span class="fu">rownames</span>(colors) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;person1&quot;</span>,<span class="st">&quot;person2&quot;</span>,<span class="st">&quot;person3&quot;</span>)</span>
+<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a><span class="fu">colnames</span>(colors) <span class="ot">&lt;-</span> universe</span>
+<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a>colors[<span class="dv">1</span>,person1] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a>colors[<span class="dv">2</span>,person2] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb19-6"><a href="#cb19-6" tabindex="-1"></a>colors[<span class="dv">3</span>,person3] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb19-7"><a href="#cb19-7" tabindex="-1"></a>colors</span>
+<span id="cb19-8"><a href="#cb19-8" tabindex="-1"></a><span class="co">#&gt;         blue green lightblue orange purple red white yellow</span></span>
+<span id="cb19-9"><a href="#cb19-9" tabindex="-1"></a><span class="co">#&gt; person1    0     1         0      0      0   1     0      1</span></span>
+<span id="cb19-10"><a href="#cb19-10" tabindex="-1"></a><span class="co">#&gt; person2    1     0         0      0      0   0     0      1</span></span>
+<span id="cb19-11"><a href="#cb19-11" tabindex="-1"></a><span class="co">#&gt; person3    0     1         1      0      0   1     0      0</span></span></code></pre></div>
+<p>and now the Intersect kernel can be computed directly as the dot
+product between samples.</p>
+<p>If we use the Intersect-cosine, then the feature space is normalized
+accordingly to the unit vector:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="fu">cosnormX</span>(colors)</span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a><span class="co">#&gt;              blue     green lightblue orange purple       red white    yellow</span></span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a><span class="co">#&gt; person1 0.0000000 0.5773503 0.0000000      0      0 0.5773503     0 0.5773503</span></span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a><span class="co">#&gt; person2 0.7071068 0.0000000 0.0000000      0      0 0.0000000     0 0.7071068</span></span>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a><span class="co">#&gt; person3 0.0000000 0.5773503 0.5773503      0      0 0.5773503     0 0.0000000</span></span></code></pre></div>
+<p>Moreover, the Intersect-multi kernel’s feature space results of
+“concatenating” the feature spaces of all sets associated to a sample,
+each one scaled accordingly by the weights <span class="math inline">\(c_d\)</span>.</p>
+</div>
+<div id="usage-7" class="section level4">
+<h4>Usage</h4>
+<p><code>kerntools</code> implementation requires that the set members
+(elements) are character symbols (length=1) combined into a string.
+Compare this with the last example:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a>universe <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;b&quot;</span>,<span class="st">&quot;g&quot;</span>,<span class="st">&quot;l&quot;</span>,<span class="st">&quot;o&quot;</span>,<span class="st">&quot;p&quot;</span>,<span class="st">&quot;r&quot;</span>,<span class="st">&quot;w&quot;</span>,<span class="st">&quot;y&quot;</span>)</span>
+<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a>colors <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="st">&quot;&quot;</span>,<span class="at">ncol=</span><span class="dv">1</span>,<span class="at">nrow=</span><span class="dv">3</span>)</span>
+<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a><span class="fu">rownames</span>(colors) <span class="ot">&lt;-</span>  <span class="fu">c</span>(<span class="st">&quot;person1&quot;</span>,<span class="st">&quot;person2&quot;</span>,<span class="st">&quot;person3&quot;</span>)</span>
+<span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a>colors[<span class="dv">1</span>,] <span class="ot">&lt;-</span><span class="fu">paste</span>(universe[person1],<span class="at">collapse=</span><span class="st">&quot;&quot;</span>)</span>
+<span id="cb21-5"><a href="#cb21-5" tabindex="-1"></a>colors[<span class="dv">2</span>,] <span class="ot">&lt;-</span><span class="fu">paste</span>(universe[person2],<span class="at">collapse=</span><span class="st">&quot;&quot;</span>)</span>
+<span id="cb21-6"><a href="#cb21-6" tabindex="-1"></a>colors[<span class="dv">3</span>,] <span class="ot">&lt;-</span><span class="fu">paste</span>(universe[person3],<span class="at">collapse=</span><span class="st">&quot;&quot;</span>)</span>
+<span id="cb21-7"><a href="#cb21-7" tabindex="-1"></a>colors</span>
+<span id="cb21-8"><a href="#cb21-8" tabindex="-1"></a><span class="co">#&gt;         [,1] </span></span>
+<span id="cb21-9"><a href="#cb21-9" tabindex="-1"></a><span class="co">#&gt; person1 &quot;gry&quot;</span></span>
+<span id="cb21-10"><a href="#cb21-10" tabindex="-1"></a><span class="co">#&gt; person2 &quot;by&quot; </span></span>
+<span id="cb21-11"><a href="#cb21-11" tabindex="-1"></a><span class="co">#&gt; person3 &quot;glr&quot;</span></span></code></pre></div>
+<p>That is a <em>NxD</em> “matrix” or “data.frame” containing
+characters. Each sample is in a different row. Now, you can do:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a><span class="fu">Intersect</span>(colors,<span class="at">elements =</span> universe)</span></code></pre></div>
+<p>This function requires that we state the universe’s elements
+explicitly. The feature space can be returned too:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a><span class="fu">Intersect</span>(colors, <span class="at">elements =</span> universe, <span class="at">feat_space =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p>If data is multivariate (<span class="math inline">\(D&gt;1\)</span>
+columns, and each one contains a set feature), the universe should span
+all elements found in all the <em>D</em> sets. For instance, consider
+this second feature:</p>
+<p><strong>Best friends of the same 3 people:</strong></p>
+<p>(<em>Anna = A</em>; <em>Bernard = B</em>; <em>Cesc = C</em>;
+<em>Diana = D </em>; <em>Elsa = E </em>; <em>Fran = F</em>; <em>Gisele =
+G</em>; <em>Horaci = H</em>; <em>Iria = I</em>; <em>Jaume = J</em>)</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a>universe2 <span class="ot">&lt;-</span>  LETTERS[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>]</span>
+<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a>person1 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">9</span>,<span class="dv">10</span>)</span>
+<span id="cb24-3"><a href="#cb24-3" tabindex="-1"></a>person2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">4</span>,<span class="dv">6</span>,<span class="dv">7</span>)</span>
+<span id="cb24-4"><a href="#cb24-4" tabindex="-1"></a>person3 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">5</span>,<span class="dv">9</span>,<span class="dv">10</span>)</span>
+<span id="cb24-5"><a href="#cb24-5" tabindex="-1"></a>person1<span class="ot">=</span>universe2[person1]</span>
+<span id="cb24-6"><a href="#cb24-6" tabindex="-1"></a>person2<span class="ot">=</span>universe2[person2]</span>
+<span id="cb24-7"><a href="#cb24-7" tabindex="-1"></a>person3<span class="ot">=</span>universe2[person3]</span>
+<span id="cb24-8"><a href="#cb24-8" tabindex="-1"></a><span class="fu">list</span>(<span class="at">person1=</span>person3,<span class="at">person2=</span>person3,<span class="at">person3=</span>person3)</span>
+<span id="cb24-9"><a href="#cb24-9" tabindex="-1"></a><span class="co">#&gt; $person1</span></span>
+<span id="cb24-10"><a href="#cb24-10" tabindex="-1"></a><span class="co">#&gt; [1] &quot;B&quot; &quot;C&quot; &quot;E&quot; &quot;I&quot; &quot;J&quot;</span></span>
+<span id="cb24-11"><a href="#cb24-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb24-12"><a href="#cb24-12" tabindex="-1"></a><span class="co">#&gt; $person2</span></span>
+<span id="cb24-13"><a href="#cb24-13" tabindex="-1"></a><span class="co">#&gt; [1] &quot;B&quot; &quot;C&quot; &quot;E&quot; &quot;I&quot; &quot;J&quot;</span></span>
+<span id="cb24-14"><a href="#cb24-14" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb24-15"><a href="#cb24-15" tabindex="-1"></a><span class="co">#&gt; $person3</span></span>
+<span id="cb24-16"><a href="#cb24-16" tabindex="-1"></a><span class="co">#&gt; [1] &quot;B&quot; &quot;C&quot; &quot;E&quot; &quot;I&quot; &quot;J&quot;</span></span>
+<span id="cb24-17"><a href="#cb24-17" tabindex="-1"></a>friends <span class="ot">&lt;-</span> colors</span>
+<span id="cb24-18"><a href="#cb24-18" tabindex="-1"></a>friends[<span class="dv">1</span>,] <span class="ot">&lt;-</span> <span class="fu">paste</span>(person1,<span class="at">collapse=</span><span class="st">&quot;&quot;</span>)</span>
+<span id="cb24-19"><a href="#cb24-19" tabindex="-1"></a>friends[<span class="dv">2</span>,] <span class="ot">&lt;-</span> <span class="fu">paste</span>(person2,<span class="at">collapse=</span><span class="st">&quot;&quot;</span>)</span>
+<span id="cb24-20"><a href="#cb24-20" tabindex="-1"></a>friends[<span class="dv">3</span>,] <span class="ot">&lt;-</span> <span class="fu">paste</span>(person3,<span class="at">collapse=</span><span class="st">&quot;&quot;</span>)</span>
+<span id="cb24-21"><a href="#cb24-21" tabindex="-1"></a>friends</span>
+<span id="cb24-22"><a href="#cb24-22" tabindex="-1"></a><span class="co">#&gt;         [,1]   </span></span>
+<span id="cb24-23"><a href="#cb24-23" tabindex="-1"></a><span class="co">#&gt; person1 &quot;ABIJ&quot; </span></span>
+<span id="cb24-24"><a href="#cb24-24" tabindex="-1"></a><span class="co">#&gt; person2 &quot;ADFG&quot; </span></span>
+<span id="cb24-25"><a href="#cb24-25" tabindex="-1"></a><span class="co">#&gt; person3 &quot;BCEIJ&quot;</span></span></code></pre></div>
+<p>So the final dataset is:</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a>set_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">colors=</span>colors,<span class="at">friends=</span>friends)</span>
+<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a>set_data</span>
+<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a><span class="co">#&gt;         colors friends</span></span>
+<span id="cb25-4"><a href="#cb25-4" tabindex="-1"></a><span class="co">#&gt; person1    gry    ABIJ</span></span>
+<span id="cb25-5"><a href="#cb25-5" tabindex="-1"></a><span class="co">#&gt; person2     by    ADFG</span></span>
+<span id="cb25-6"><a href="#cb25-6" tabindex="-1"></a><span class="co">#&gt; person3    glr   BCEIJ</span></span></code></pre></div>
+<p>And now we can compute the kernel:</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a><span class="fu">Intersect</span>(set_data,<span class="at">elements =</span> <span class="fu">c</span>(universe,universe2),<span class="at">comp=</span><span class="st">&quot;sum&quot;</span>)</span></code></pre></div>
+<p>(We should indicate the elements of the two universes: colors and
+friends).</p>
+<p>When <code>Intersect(...,comp = &quot;sum&quot;)</code>, all <span class="math inline">\(c_d = 1\)</span> and, in principle, all “features”
+(following with our last example: “friends” and “colors”) have the same
+weight. In practice you should be careful, because
+<code>kerntools</code> doesn’t cosine-normalizes each univariate
+evaluation of the kernel. Thus, you may inadvertently introduce some
+bias in favor of “bigger” sets (“friends” will have, implicitly, more
+weight than “colors”). Instead, when <code>comp = &quot;mean&quot;</code> or
+<code>comp = &quot;weighted&quot;</code> is chosen, <code>kerntools</code>
+cosine-normalizes all univariate evaluations, so the result ranges
+between 0 and 1, and there are not implicit biases.
+<code>Intersect(...,comp = &quot;mean&quot;)</code> sets <span class="math inline">\(c_d = 1/D\)</span> and therefore gives the same
+importance to all features. However, if you want to give more importance
+to some features over others, you can choose manually the weights that
+you want:</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a><span class="do">### We will make that &quot;friends&quot; has 3 times more importance than &quot;colors&quot;:</span></span>
+<span id="cb27-2"><a href="#cb27-2" tabindex="-1"></a>coeffs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">4</span>,<span class="dv">3</span><span class="sc">/</span><span class="dv">4</span>)</span>
+<span id="cb27-3"><a href="#cb27-3" tabindex="-1"></a><span class="fu">Intersect</span>(set_data, <span class="at">elements =</span> <span class="fu">c</span>(universe,universe2),<span class="at">comp =</span> <span class="st">&quot;weighted&quot;</span>,  <span class="at">coeff=</span>coeffs)</span></code></pre></div>
+<p>Here, the result of the kernel (between 0 and 1) is the weighted
+average of the features. If you set
+<code>Intersect(..., feat_space = TRUE)</code>, the feature space
+returned by this function will be scaled accordingly to the <span class="math inline">\(c_d\)</span> coefficients chosen. The same will
+occur when doing <code>Intersect(...,comp = &quot;mean&quot;)</code>, but in this
+case the scaling consist in simply dividing by <em>D</em> (the set
+features).</p>
+</div>
+</div>
+<div id="jaccard-kernel" class="section level3">
+<h3>Jaccard kernel</h3>
+<div id="definition-8" class="section level4">
+<h4>Definition</h4>
+<p>The Jaccard index (or Jaccard kernel) of two sets is defined as:</p>
+<p><span class="math display">\[Jaccard(S_i,S_j)= \frac{|S_i \cap
+S_j|}{|S_i \cup S_j|} \]</span> It naturally ranges between 0 (the sets
+don’t share any element) and 1 (the sets are identical). Thus, the
+cosine normalization is redundant for this kernel.</p>
+<p>Like the Dirac and the Intersect kernels, we can consider a
+multivariate case for the Jaccard kernel. If each sample has several
+(<em>D</em>) variables that happen to be sets, we can do a linear
+combination of the kernel’s evaluations to produce a “multivariate”
+kernel:</p>
+<p><span class="math display">\[ Jaccard_{multi}(S_{i},S_{j})
+=  \sum_{d=1}^{D} c_d Jaccard(S_{id},S_{jd})\]</span></p>
+<p>The coefficients <span class="math inline">\(c_d&gt;0\)</span> can
+all be 1 (and then, this multivariate kernel is simply the sum of the
+Jaccard kernel evaluations), <em>1/D</em> (so the Jaccard-multi kernel
+is the mean of evaluations), or may be used to weight variables (sets)
+differently (for example, because you have previous knowledge about your
+problem). In this last case, the Jaccard-multi kernel is a weighted
+average of the Jaccard kernel’s evaluations. When the coefficients are
+all set to <span class="math inline">\(\sum c_d=1\)</span>, the values
+given by the Jaccard-multi kernel range between 0 and 1.</p>
+</div>
+<div id="usage-8" class="section level4">
+<h4>Usage</h4>
+<p>The usage is pretty similar to the Intersect kernel:</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a><span class="fu">Jaccard</span>(set_data,<span class="at">elements =</span> <span class="fu">c</span>(universe,universe2),<span class="at">comp=</span><span class="st">&quot;sum&quot;</span>)</span></code></pre></div>
+<p>The only nuance here is that the univariate Jaccard kernel always is
+bounded between 0 and 1. There are not underlying biases and all
+features have the same weight (unless you explicitly do
+<code>Intersect(...,comp = &quot;weighted&quot;)</code> and enter some
+coefficients). Thus, this:</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a><span class="fu">cosNorm</span>(<span class="fu">Jaccard</span>(set_data,<span class="at">elements =</span> <span class="fu">c</span>(universe,universe2),<span class="at">comp=</span><span class="st">&quot;sum&quot;</span>))</span></code></pre></div>
+<p>or this:</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" tabindex="-1"></a>D <span class="ot">&lt;-</span> <span class="fu">ncol</span>(set_data)</span>
+<span id="cb30-2"><a href="#cb30-2" tabindex="-1"></a><span class="fu">Jaccard</span>(set_data,<span class="at">elements =</span> <span class="fu">c</span>(universe,universe2),<span class="at">comp=</span><span class="st">&quot;sum&quot;</span>)<span class="sc">/</span>D</span></code></pre></div>
+<p>Is the same than this:</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" tabindex="-1"></a><span class="fu">Jaccard</span>(set_data,<span class="at">elements =</span> <span class="fu">c</span>(universe,universe2),<span class="at">comp=</span><span class="st">&quot;mean&quot;</span>)</span></code></pre></div>
+<p>Also, take into account that the <code>Jaccard()</code> function does
+not return the data mapped onto the feature space of the kernel.</p>
+</div>
+</div>
+</div>
+<div id="kernels-for-ordinal-data-ranks-and-permutations" class="section level2">
+<h2>Kernels for ordinal data, ranks, and permutations</h2>
+<p>Ordinal data consist on qualitative variables that can take a finite
+number of values that follow an intrinsic and meaningful order. In that
+regard, ordinal data is in-between continuous and categorical (nominal)
+data. For instance, in a survey, the typical agree/disagree questions
+that have answers like “strongly agree”/“agree”/“neither agree or
+disagree”/“disagree”/etc. are ordinal variables. This is related to the
+concept of “ranking”, which consists in assigning the ordering labels
+“1st”, “2nd”, “3rd”, … to these values.</p>
+<div id="kendalls-tau-kernel" class="section level3">
+<h3>Kendall’s <span class="math inline">\(\tau\)</span> kernel</h3>
+<div id="definition-9" class="section level4">
+<h4>Definition</h4>
+<p>Kendall’s <span class="math inline">\(\tau\)</span> coefficient
+measures the similarity or rank correlation between to two ordinal
+variables. It can be applied to different ordinal variables or to
+different rankings of the same variable. It is also a kernel function,
+defined as:</p>
+<p><span class="math display">\[Kendall_\tau (x,y)=
+\frac{nc-nd}{np}\]</span> Let <span class="math inline">\((x_1,y_1),...,(x_L,y_L)\)</span> be two ordinal
+variables, or two samples of the same variable. For simplicity, we shall
+consider that all values taken by <span class="math inline">\(x_i\)</span> and <span class="math inline">\(y_i\)</span> are unique. Observations <span class="math inline">\((x_i, y_i)\)</span> and (<span class="math inline">\(x_j , y_j)\)</span> with <span class="math inline">\(i &lt; j\)</span> are “concordant” if we either
+observe <span class="math inline">\(x_i &lt; x_j\)</span> and <span class="math inline">\(y_i &lt; y_j\)</span>, or <span class="math inline">\(x_i &gt; x_j\)</span> and <span class="math inline">\(y_i &gt; y_j\)</span>. Otherwise, they are
+“discordant”. (Please note that, as <span class="math inline">\(x_i\)</span> and <span class="math inline">\(y_i\)</span> are unique, there are no
+<em>ties</em>: it’s impossible that <span class="math inline">\(x_i =
+x_j\)</span> or <span class="math inline">\(y_i = y_j\)</span>). All
+possible pairwise evaluations are taken into account: <span class="math inline">\(np\)</span> is the total number of pairs, given by
+<span class="math inline">\(\binom{L}{2}\)</span>, <span class="math inline">\(nc\)</span> is the number of total concordant
+pairs, and <span class="math inline">\(nd\)</span> is the number of
+total discordant pairs.</p>
+<p>The result of the Kendall’s <span class="math inline">\(\tau\)</span>
+kernel can range between -1 and 1. 1 means that the two rankings are
+identical: the two ordinal samples/variables are equal, -1 that one
+ranking is the reverse of the other, and 0 that the two rankings are
+completely independent.</p>
+</div>
+<div id="feature-space-6" class="section level4">
+<h4>Feature space</h4>
+<p>If we call <span class="math inline">\(r_i\)</span> and <span class="math inline">\(s_i\)</span> the ranks of the i-th member in the
+two ordinal samples, we can then define two matrices <strong>A</strong>
+and <strong>B</strong> that:</p>
+<p><span class="math display">\[\mathbf{A}_{ij} = sign(r_j -
+r_i)\]</span> <span class="math display">\[\mathbf{B}_{ij} = sign(s_j -
+s_i)\]</span> These matrices fulfill that <span class="math inline">\(\mathbf{A}^T = -\mathbf{A}\)</span> and that <span class="math inline">\(\mathbf{B}^T = -\mathbf{B}\)</span>. Now, we can
+observe that:</p>
+<p><span class="math display">\[Kendall_\tau
+(x,y)  =  Frobenius_{cosine}(\mathbf{A},\mathbf{B})\]</span> From there,
+the data in feature space can be found the same way than in the
+Frobenius kernel. It can be deduced that, for the Kendall’s <span class="math inline">\(\tau\)</span> kernel, feature space has dimension
+<span class="math inline">\(\binom{L}{2}\)</span>, and each feature
+corresponds to a “relative order” (<span class="math inline">\(+ =  x_i
+&lt; x_j\)</span>; <span class="math inline">\(- =  x_i &gt;
+x_j\)</span>) between all pair of levels within a ranking.</p>
+</div>
+<div id="usage-9" class="section level4">
+<h4>Usage</h4>
+<p>A <em>NxL</em> or <em>LxN</em> dataset is required. <em>N</em> is the
+sample size and <em>L</em> the number of values (levels) of the ordinal
+variable. This is an example that such a dataset:</p>
+<p><strong>Three people are given a list of 10 colors. They rank them
+from most (1) to least (10) favorite.</strong></p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" tabindex="-1"></a>color_list <span class="ot">&lt;-</span>  <span class="fu">c</span>(<span class="st">&quot;black&quot;</span>,<span class="st">&quot;blue&quot;</span>,<span class="st">&quot;green&quot;</span>,<span class="st">&quot;grey&quot;</span>,<span class="st">&quot;lightblue&quot;</span>,<span class="st">&quot;orange&quot;</span>,<span class="st">&quot;purple&quot;</span>,</span>
+<span id="cb32-2"><a href="#cb32-2" tabindex="-1"></a><span class="st">&quot;red&quot;</span>,<span class="st">&quot;white&quot;</span>,<span class="st">&quot;yellow&quot;</span>)</span>
+<span id="cb32-3"><a href="#cb32-3" tabindex="-1"></a>survey1 <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span></span>
+<span id="cb32-4"><a href="#cb32-4" tabindex="-1"></a>survey2 <span class="ot">&lt;-</span> <span class="dv">10</span><span class="sc">:</span><span class="dv">1</span></span>
+<span id="cb32-5"><a href="#cb32-5" tabindex="-1"></a>survey3 <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">10</span>)</span>
+<span id="cb32-6"><a href="#cb32-6" tabindex="-1"></a>color <span class="ot">&lt;-</span> <span class="fu">cbind</span>(survey1,survey2,survey3) <span class="co"># Samples in columns</span></span>
+<span id="cb32-7"><a href="#cb32-7" tabindex="-1"></a><span class="fu">rownames</span>(color) <span class="ot">&lt;-</span> color_list</span>
+<span id="cb32-8"><a href="#cb32-8" tabindex="-1"></a>color</span>
+<span id="cb32-9"><a href="#cb32-9" tabindex="-1"></a><span class="co">#&gt;           survey1 survey2 survey3</span></span>
+<span id="cb32-10"><a href="#cb32-10" tabindex="-1"></a><span class="co">#&gt; black           1      10      10</span></span>
+<span id="cb32-11"><a href="#cb32-11" tabindex="-1"></a><span class="co">#&gt; blue            2       9       7</span></span>
+<span id="cb32-12"><a href="#cb32-12" tabindex="-1"></a><span class="co">#&gt; green           3       8       5</span></span>
+<span id="cb32-13"><a href="#cb32-13" tabindex="-1"></a><span class="co">#&gt; grey            4       7       4</span></span>
+<span id="cb32-14"><a href="#cb32-14" tabindex="-1"></a><span class="co">#&gt; lightblue       5       6       1</span></span>
+<span id="cb32-15"><a href="#cb32-15" tabindex="-1"></a><span class="co">#&gt; orange          6       5       3</span></span>
+<span id="cb32-16"><a href="#cb32-16" tabindex="-1"></a><span class="co">#&gt; purple          7       4       2</span></span>
+<span id="cb32-17"><a href="#cb32-17" tabindex="-1"></a><span class="co">#&gt; red             8       3       9</span></span>
+<span id="cb32-18"><a href="#cb32-18" tabindex="-1"></a><span class="co">#&gt; white           9       2       8</span></span>
+<span id="cb32-19"><a href="#cb32-19" tabindex="-1"></a><span class="co">#&gt; yellow         10       1       6</span></span></code></pre></div>
+<p>In this case, the ranking is already done. The Kendall’s <span class="math inline">\(\tau\)</span> kernel is computed like:</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" tabindex="-1"></a><span class="fu">Kendall</span>(color)</span></code></pre></div>
+<p>(If we prefer samples in rows, we can do:)</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" tabindex="-1"></a>color <span class="ot">&lt;-</span> <span class="fu">t</span>(color)</span>
+<span id="cb34-2"><a href="#cb34-2" tabindex="-1"></a><span class="fu">Kendall</span>(color,<span class="at">samples.in.rows=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<p>Alternatively, the ranking may be not given explicitly by the user.
+Consider this other dataset:</p>
+<p><strong>The same three people are asked the number of times they ate
+5 different kinds of food during the last month</strong></p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" tabindex="-1"></a>food <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">1</span>,<span class="dv">18</span>, <span class="dv">25</span>,<span class="dv">30</span>, <span class="dv">7</span>, <span class="dv">5</span>,<span class="dv">20</span>, <span class="dv">5</span>, <span class="dv">12</span>, <span class="dv">7</span>,<span class="dv">20</span>, <span class="dv">20</span>, <span class="dv">3</span>,<span class="dv">22</span>),<span class="at">ncol=</span><span class="dv">3</span>,<span class="at">nrow=</span><span class="dv">5</span>,<span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb35-2"><a href="#cb35-2" tabindex="-1"></a><span class="fu">colnames</span>(food) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(color)</span>
+<span id="cb35-3"><a href="#cb35-3" tabindex="-1"></a><span class="fu">rownames</span>(food) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;spinach&quot;</span>, <span class="st">&quot;chicken&quot;</span>, <span class="st">&quot;beef&quot;</span> , <span class="st">&quot;salad&quot;</span>,<span class="st">&quot;lentils&quot;</span>)</span>
+<span id="cb35-4"><a href="#cb35-4" tabindex="-1"></a>food</span>
+<span id="cb35-5"><a href="#cb35-5" tabindex="-1"></a><span class="co">#&gt;         survey1 survey2 survey3</span></span>
+<span id="cb35-6"><a href="#cb35-6" tabindex="-1"></a><span class="co">#&gt; spinach      10       1      18</span></span>
+<span id="cb35-7"><a href="#cb35-7" tabindex="-1"></a><span class="co">#&gt; chicken      25      30       7</span></span>
+<span id="cb35-8"><a href="#cb35-8" tabindex="-1"></a><span class="co">#&gt; beef          5      20       5</span></span>
+<span id="cb35-9"><a href="#cb35-9" tabindex="-1"></a><span class="co">#&gt; salad        12       7      20</span></span>
+<span id="cb35-10"><a href="#cb35-10" tabindex="-1"></a><span class="co">#&gt; lentils      20       3      22</span></span></code></pre></div>
+<p>In that case, the ranking is done internally before computing the
+Kendall’s <span class="math inline">\(\tau\)</span>.</p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" tabindex="-1"></a><span class="fu">Kendall</span>(food)</span></code></pre></div>
+<p>Furthermore, we can combine these two datasets, because the
+participants are the same:</p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" tabindex="-1"></a>ordinal_data <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">color=</span>color,<span class="at">food=</span>food) <span class="co">#All samples in columns</span></span>
+<span id="cb37-2"><a href="#cb37-2" tabindex="-1"></a><span class="fu">Kendall</span>(ordinal_data)</span></code></pre></div>
+<p>By default, the Kendall’s <span class="math inline">\(\tau\)</span>
+kernel values of the two datasets are averaged. The alternative is to
+sum them, doing: <code>Kendall(...,comp=&quot;sum&quot;)</code>.</p>
+<p>Right now, <code>Kendall()</code> does not return the data mapped
+onto the feature space.</p>
+</div>
+</div>
+</div>
+<div id="kernels-for-strings-sequences-or-text" class="section level2">
+<h2>Kernels for strings, sequences, or text</h2>
+<p>Strings or sequences are vectors of objects (usually represented as
+characters) in which repetitions are allowed and order matters. These
+characters are drawn from a given alphabet <span class="math inline">\(A\)</span>. An example of an alphabet is:</p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" tabindex="-1"></a>LETTERS</span>
+<span id="cb38-2"><a href="#cb38-2" tabindex="-1"></a><span class="co">#&gt;  [1] &quot;A&quot; &quot;B&quot; &quot;C&quot; &quot;D&quot; &quot;E&quot; &quot;F&quot; &quot;G&quot; &quot;H&quot; &quot;I&quot; &quot;J&quot; &quot;K&quot; &quot;L&quot; &quot;M&quot; &quot;N&quot; &quot;O&quot; &quot;P&quot; &quot;Q&quot; &quot;R&quot; &quot;S&quot;</span></span>
+<span id="cb38-3"><a href="#cb38-3" tabindex="-1"></a><span class="co">#&gt; [20] &quot;T&quot; &quot;U&quot; &quot;V&quot; &quot;W&quot; &quot;X&quot; &quot;Y&quot; &quot;Z&quot;</span></span></code></pre></div>
+<p>We denote the size of an alphabet as <span class="math inline">\(|A|\)</span>. In the example above, this is:</p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" tabindex="-1"></a><span class="fu">length</span>(LETTERS)</span>
+<span id="cb39-2"><a href="#cb39-2" tabindex="-1"></a><span class="co">#&gt; [1] 26</span></span></code></pre></div>
+<div id="spectrum-kernel" class="section level3">
+<h3>Spectrum kernel</h3>
+<div id="feature-space-7" class="section level4">
+<h4>Feature space</h4>
+<p>Let <span class="math inline">\(x\)</span> be a string or sequence,
+and <span class="math inline">\(s\)</span> a substring of length
+<em>L</em> that consist of characters drawn from an alphabet <span class="math inline">\(A\)</span>, so we can count the times (<span class="math inline">\(t_s\)</span>) that <span class="math inline">\(s\)</span> occurs in <span class="math inline">\(x\)</span>. Then, we do the same for all possible
+substrings of length <em>L</em> generated from <span class="math inline">\(A\)</span>. Each <span class="math inline">\(t_s\)</span> is a feature in feature space, which
+has dimension <span class="math inline">\(|A|^L\)</span>.</p>
+</div>
+<div id="definition-10" class="section level4">
+<h4>Definition</h4>
+<p>The Spectrum kernel is the dot product of two strings mapped onto the
+feature space we have just defined. Alternatively, it can also be
+written as:</p>
+<p><span class="math display">\[Spectrum(x_i,x_j) = \sum_{s \in A^L} |s
+\in x_i|·|s \in x_j| \]</span> This kernel ranges from 0 (the strings
+are completely different: they don’t share any substring) to any
+positive number. In general, higher values indicate higher similarity;
+however, it’s important to remember that some strings may be longer than
+others. This is fine if the strings’ length is relevant to the problem
+you are studying; but if it is not, you can cosine-normalize the
+Spectrum kernel so the result is bounded between 0 and 1:</p>
+<p><span class="math display">\[Spectrum_{cosine}(x_i,x_j)
+=  \frac{Spectrum(x_i,x_j)}{\sqrt{Spectrum(x_i,x_i)Spectrum(x_j,x_j)}}\]</span>
+A result of 0 means complete dissimilarity, 1 means complete similarity,
+and the strings’ length is not taken into account.</p>
+</div>
+<div id="usage-10" class="section level4">
+<h4>Usage</h4>
+<p>You need a dataset containing <em>N</em> strings or text data. For
+instance:</p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" tabindex="-1"></a>alphabet <span class="ot">&lt;-</span> <span class="fu">c</span>(letters,<span class="st">&quot;_&quot;</span>)</span>
+<span id="cb40-2"><a href="#cb40-2" tabindex="-1"></a>strings <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;hello_world&quot;</span>,<span class="st">&quot;hello_word&quot;</span>,<span class="st">&quot;hola_mon&quot;</span>,<span class="st">&quot;kaixo_mundua&quot;</span>,</span>
+<span id="cb40-3"><a href="#cb40-3" tabindex="-1"></a><span class="st">&quot;saluton_mondo&quot;</span>,<span class="st">&quot;ola_mundo&quot;</span>, <span class="st">&quot;bonjour_le_monde&quot;</span>)</span>
+<span id="cb40-4"><a href="#cb40-4" tabindex="-1"></a><span class="fu">names</span>(strings) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;english1&quot;</span>,<span class="st">&quot;english_typo&quot;</span>,<span class="st">&quot;catalan&quot;</span>,<span class="st">&quot;basque&quot;</span>,</span>
+<span id="cb40-5"><a href="#cb40-5" tabindex="-1"></a><span class="st">&quot;esperanto&quot;</span>,<span class="st">&quot;galician&quot;</span>,<span class="st">&quot;french&quot;</span>)</span>
+<span id="cb40-6"><a href="#cb40-6" tabindex="-1"></a>strings</span>
+<span id="cb40-7"><a href="#cb40-7" tabindex="-1"></a><span class="co">#&gt;           english1       english_typo            catalan             basque </span></span>
+<span id="cb40-8"><a href="#cb40-8" tabindex="-1"></a><span class="co">#&gt;      &quot;hello_world&quot;       &quot;hello_word&quot;         &quot;hola_mon&quot;     &quot;kaixo_mundua&quot; </span></span>
+<span id="cb40-9"><a href="#cb40-9" tabindex="-1"></a><span class="co">#&gt;          esperanto           galician             french </span></span>
+<span id="cb40-10"><a href="#cb40-10" tabindex="-1"></a><span class="co">#&gt;    &quot;saluton_mondo&quot;        &quot;ola_mundo&quot; &quot;bonjour_le_monde&quot;</span></span>
+<span id="cb40-11"><a href="#cb40-11" tabindex="-1"></a>alphabet</span>
+<span id="cb40-12"><a href="#cb40-12" tabindex="-1"></a><span class="co">#&gt;  [1] &quot;a&quot; &quot;b&quot; &quot;c&quot; &quot;d&quot; &quot;e&quot; &quot;f&quot; &quot;g&quot; &quot;h&quot; &quot;i&quot; &quot;j&quot; &quot;k&quot; &quot;l&quot; &quot;m&quot; &quot;n&quot; &quot;o&quot; &quot;p&quot; &quot;q&quot; &quot;r&quot; &quot;s&quot;</span></span>
+<span id="cb40-13"><a href="#cb40-13" tabindex="-1"></a><span class="co">#&gt; [20] &quot;t&quot; &quot;u&quot; &quot;v&quot; &quot;w&quot; &quot;x&quot; &quot;y&quot; &quot;z&quot; &quot;_&quot;</span></span></code></pre></div>
+<p>Then you can compute the Spectrum kernel. For instance, we could
+consider substrings of length L = 2:</p>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" tabindex="-1"></a><span class="fu">Spectrum</span>(strings,<span class="at">l=</span><span class="dv">2</span>,<span class="at">alphabet=</span>alphabet)</span></code></pre></div>
+<p>The feature space can be recovered doing:</p>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" tabindex="-1"></a><span class="fu">Spectrum</span>(strings,<span class="at">l=</span><span class="dv">2</span>,<span class="at">alphabet=</span>alphabet, <span class="at">feat_space =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p>The cosine-normalized version can be computed typing:</p>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" tabindex="-1"></a><span class="fu">Spectrum</span>(strings,<span class="at">l=</span><span class="dv">2</span>,<span class="at">alphabet=</span>alphabet,<span class="at">cos.norm =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p>(if you set <code>feat_space=TRUE</code>, the feature space returned
+by <code>Spectrum()</code> will be scaled accordingly).</p>
+<p>Right now, the Spectrum kernel implemented by <code>kerntools</code>
+is very basic and, in large datasets and/or when <em>L</em> is high, the
+computation may be excessively slow. In that case, there are other R
+packages that you may use. For instance, you may refer to
+<code>kernlab::stringdot()</code>, or check the <code>kebabs</code>
+package, which covers complex kernels for strings like the motif kernel,
+the mismatch kernel, the gappy pair kernel, etc.</p>
+</div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

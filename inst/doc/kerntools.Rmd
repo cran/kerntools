@@ -68,7 +68,7 @@ Another possibility is to visualize the whole kernel matrix with a heatmap:
 heatK(KL,cos.norm = FALSE)
 ```
 
-Here, yellow denotes a great similarity between the samples, while red denotes that the similarity is low (the colour palette is customizable via the parameter `color`). At a glance we see that the first 50 samples (*I. setosa*) have a higher intra-group similarity. Also, they are very different from the samples 101-150 (which correspond to *I. virginica*). Instead, *I. versicolor* is kind of intermediate between these two groups.
+Here, yellow denotes a high similarity between the samples, while red denotes that the similarity is low (the colour palette is customizable via the parameter `color`). At a glance we see that the first 50 samples (*I. setosa*) have a higher intra-group similarity. Also, they are very different from the samples 101-150 (which correspond to *I. virginica*). Instead, *I. versicolor* is kind of intermediate between these two groups.
 
 To confirm our intuitions about the (dis)similarity among the three species, we may proceed to a widespread ordination method: the Principal Components Analysis (PCA). PCAs can be computed from kernel matrices very easily. In fact, using kernel matrices *expands* what a PCA can do, but this will be discussed in further sections. To display a beautiful PCA plot that colors the samples by species, we do:
 

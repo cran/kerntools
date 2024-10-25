@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Elies Ramon" />
+
+
+<title>Kernel PCA and Coinertia</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Kernel PCA and Coinertia</h1>
+<h4 class="author">Elies Ramon</h4>
+
+
+
+<div id="purpose-of-this-document" class="section level2">
+<h2>Purpose of this document</h2>
+<p>The purpose of this document is to answer, in a few words, the
+following questions:</p>
+<ul>
+<li>What is Principal Component Analysis (PCA)?</li>
+<li>How to compute it using kernels?</li>
+<li>Why Coinertia analysis is related to kernel alignment
+(similarity)?</li>
+<li>How <code>kerntools</code> implementation of these two methods
+compares to other R implementations?</li>
+</ul>
+<p>The goal is not to dive deeply in mathematical demonstrations, which
+can be found elsewhere. Instead, this document will explain the basics
+(using matrix notation) so the user can understand why
+<code>kerntools</code> takes a different approach from other R
+packages.</p>
+</div>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>Dimensionality reduction consist in projecting a cloud of
+points/samples on a new basis of lower dimensionality. It is a central
+task in pattern analysis and the resulting projection has a lot of
+potential uses afterwards, from displaying it on a two or
+three-dimensional plot to studying its properties, to name a few. There
+are many methods that perform dimensionality reduction, but most of them
+are based on <strong>eigendecomposition</strong>: that is, they work
+with the eigenvectors and eigenvalues of the original dataset.
+Typically, the main difference among these methods is how they use this
+information; or in other words, its criterion/criteria for finding the
+projection basis. For example, <strong>PCA</strong> finds a new basis so
+the first axes maximize the <strong>variance</strong> (variability) of
+the projection. The projection preserves the total variance of the
+original dataset (also called <strong>inertia</strong>), and the new
+variables (Principal Components or <strong>PCs</strong>) are in
+decreasing order according to the fraction of inertia they retain. There
+also exist dimensionality reduction methods that work with two datasets.
+Coinertia Analysis (<strong>CIA</strong>) is an example of this group,
+and it has as a main criterion to maximize the covariance between both
+datasets.</p>
+<div id="matrix-decomposition" class="section level3">
+<h3>Matrix decomposition</h3>
+<p>Matrix decomposition (also known as matrix factorization) consist in
+expressing a matrix <strong>A</strong> as the product of two or more
+matrices.</p>
+</div>
+<div id="eigendecomposition" class="section level3">
+<h3>Eigendecomposition</h3>
+<p>A non-zero vector, <strong>v</strong>, with dimension (length)
+<em>N</em>, is an <strong>eigenvector</strong> of <strong>A</strong>, a
+matrix, if:</p>
+<p><span class="math display">\[\mathbf{Av} = \lambda
+\mathbf{v}\]</span> That is: the eigenvectors of <strong>A</strong> are
+the set of vectors that have their direction left unchanged under
+<strong>A</strong> (which works here as a linear map). Instead,
+<strong>A</strong> only scales them by constant factors, <span class="math inline">\(\lambda\)</span>, called the
+<strong>eigenvalues</strong>. Each eigenvector is associated to an
+eigenvalue, and both can be found solving the characteristic equation.
+From now on, we will call the matrix of eigenvectors <strong>V</strong>
+(which has eigenvectors placed at the columns), and <strong>D</strong>
+the diagonal matrix that contains their corresponding eigenvalues. If
+all the eigenvalues in <strong>D</strong> are nonnegative (positive or
+zero), we say that <strong>A</strong> is a positive semi-definite (PSD)
+matrix. If there are strictly positive, we will say that
+<strong>A</strong> is positive definite.</p>
+<p>Not all matrices can be eigendecomposed; only those that are
+diagonalizable. That implies that, at last, they should be squared.
+Supposing <strong>A</strong> is squared and diagonalizable, we can write
+its eigendecomposition as:</p>
+<p><span class="math display">\[\mathbf{A}=\mathbf{VDV^{-1}}\]</span>
+When <strong>A</strong> is real (it contains only real values), squared
+and symmetric, it has “extra” properties regarding eigendecomposition.
+In that case, the eigendecomposition has the form:</p>
+<p><span class="math display">\[\mathbf{A}=\mathbf{VDV^T}\]</span>
+<strong>V</strong> here is orthonormal (that is: is <span class="math inline">\(\mathbf{V}=\mathbf{V^T}=\mathbf{V^{-1}}\)</span>).
+Thus, the eigenvectors of <strong>A</strong> form an orthonormal basis:
+they are linearly independent, orthogonal, and have modulus 1.</p>
+<p>Finally, a well-known property of eigendecomposition is that the
+non-zero eigenvalues of the product of two matrices <strong>AB</strong>
+are identical to those of <strong>BA</strong>, although the eigenvectors
+of these two matrices may be different.</p>
+</div>
+<div id="singular-value-decomposition-svd" class="section level3">
+<h3>Singular Value Decomposition (SVD)</h3>
+<p><strong>SVD</strong> is another matrix factorization method. It’s
+more general than eigendecomposition, because it can be applied to every
+matrix, even if it is not squared. The SVD of a non-squared matrix
+<strong>M</strong> with dimension <em>NxD</em> is:</p>
+<p><span class="math display">\[\mathbf{M}=\mathbf{U \Lambda
+V^T}\]</span> where: <span class="math inline">\(\mathbf{\Lambda}\)</span> (dimension <em>NxD</em>)
+is the quasi-diagonal matrix containing the singular values <span class="math inline">\(s_i\)</span> of <strong>M</strong>. They are
+always real and nonnegative. <strong>U</strong> (dimension <em>NxN</em>)
+and <strong>V</strong> (dimension <em>DxD</em>) are orthogonal matrices,
+and thus each one of them forms a basis.</p>
+<p>We can relate eigendecomposition and SVD. If <strong>M</strong> is
+real:</p>
+<p><span class="math display">\[\mathbf{M^TM}=\mathbf{V \Lambda^T
+U^T}\mathbf{U \Lambda V^T}=\mathbf{V (\Lambda^T \Lambda ) V^T}\]</span>
+<span class="math display">\[\mathbf{MM^T}=\mathbf{U \Lambda
+V^T}\mathbf{V \Lambda^T U^T}=\mathbf{U (\Lambda \Lambda^T) U^T}\]</span>
+Both <span class="math inline">\(\mathbf{MM^T}\)</span> and <span class="math inline">\(\mathbf{M^TM}\)</span> are always squared and
+symmetric. Thus:</p>
+<ul>
+<li><p>The columns of <strong>V</strong> (right singular vectors) are
+also the eigenvectors of <span class="math inline">\(\mathbf{M^TM}\)</span>.</p></li>
+<li><p>The columns of <strong>U</strong> (left singular vectors) are
+also the eigenvectors of <span class="math inline">\(\mathbf{MM^T}\)</span>.</p></li>
+<li><p>Taking the squared root of the eigenvalues gives us the singular
+values: <span class="math inline">\(\mathbf{V D V^T} =\mathbf{V
+\Lambda^2 V^T}\)</span>. This root always give us real numbers because
+both <span class="math inline">\(\mathbf{MM^T}\)</span> and <span class="math inline">\(\mathbf{M^TM}\)</span> are PSD on top of real,
+squared and symmetric matrices. Also, as explained before, both have the
+same set of non-zero eigenvalues.</p></li>
+</ul>
+</div>
+</div>
+<div id="principal-components-analysis-pca" class="section level2">
+<h2>Principal Components Analysis (PCA)</h2>
+<p>Our starting point is a dataset with dimension <em>N×D</em>
+(<em>N</em> samples and <em>D</em> variables). First, we center it; that
+is, we substract the mean value per column, so the mean of each variable
+is now 0. We will call this centered dataset <strong>X</strong>. The
+covariance matrix of <strong>X</strong> is:</p>
+<p><span class="math display">\[\mathbf{C} =
+\frac{1}{N-1}\mathbf{X^TX}\]</span> (By the way, un-centered PCA is not
+entirely unheard of, but things become a bit muddled if the dataset is
+not centered, because then the variability criterion of the PCA is not
+the variance but the distance to the origin (0)).</p>
+<p><strong>C</strong> is squared (dimension: <em>DxD</em>), symmetric
+and PSD. When we compute the eigendecomposition of <strong>C</strong>,
+we obtain:</p>
+<p><span class="math display">\[\mathbf{C}=\mathbf{VDV^T}\]</span> The
+diagonal matrix <strong>D</strong> contains the eigenvalues <span class="math inline">\(\lambda_i\)</span> in decreasing order. The
+columns of <strong>V</strong> are the eigenvectors, which generate a
+orthogonal basis (remember that <strong>C</strong> is squared, PSD, and
+contains only real numbers). The eigenvectors are the Principal Axes of
+the PCA projection. Each on of them is associated to a specific
+eigenvalue, which indicates how much variance in <strong>X</strong> is
+captured by its paired eigenvector.The Principal Components (PC) are the
+result of projecting our original data/variables onto this new basis,
+and we can think of them as new variables created from a linear
+combination of the original variables. This projection (that is: the
+original samples’ coordinates in the new axes), which we will call
+<strong>X’</strong>, is given by:</p>
+<p><span class="math display">\[\mathbf{X&#39;}=\mathbf{XV}\]</span> and
+it has the same dimension <em>NxD</em> of the original dataset
+<strong>X</strong>. Usually, PCA is used as a dimensionality reduction
+method, especially for visualization purposes. In that case, only the
+first PCs are relevant. An example: when drawing a two-dimensional plot,
+we only need the first two columns of <strong>V</strong>, which
+correspond to the two PCs with higher variance. Then: <span class="math inline">\(\mathbf{X}&#39;_{N\times2}=\mathbf{X}_{N\times
+D}\mathbf{V}_{D\times2}\)</span></p>
+<p>In any case, the projection of a new sample <strong>x</strong> (a row
+vector of length <em>D</em>) is trivial, as it can be computed anytime
+as:</p>
+<p><span class="math display">\[\mathbf{x&#39;}=\mathbf{xV}\]</span> An
+alternative way of computing a PCA relies on the SVD of
+<strong>X</strong>, the centered dataset. In this case, we obtain:</p>
+<p><span class="math display">\[\mathbf{X}=\mathbf{U \Lambda
+V^T}\]</span> This <strong>V</strong> is, again, the matrix with the
+eigenvectors in the columns, while <span class="math inline">\(\Lambda\)</span> is a diagonal matrix with the
+singular values <span class="math inline">\(s_i\)</span>, which are
+closely related to the eigenvalues: <span class="math inline">\(\lambda_i = s_i^2 /(N-1)\)</span>. Furthermore,
+the PCs can be obtained as <span class="math inline">\(\mathbf{U
+\Lambda}\)</span>. This is because:</p>
+<p><span class="math display">\[\mathbf{X&#39;}=\mathbf{XV}=\mathbf{U
+\Lambda V^TV}=\mathbf{U \Lambda}\]</span> Strictly speaking,
+<strong>U</strong> has dimension <em>N×N</em> and <strong>V</strong> has
+dimension <em>DxD</em>. However, if <em>N &gt; D</em>, the last <em>N −
+D</em> columns of <strong>U</strong> are irrelevant and the
+corresponding entries in <span class="math inline">\(\Lambda\)</span>
+are 0. Conversely, if <em>N &lt; D</em>, the last <em>D − N</em> columns
+of <strong>V</strong> are irrelevant and their corresponding singular
+values are, again, 0.</p>
+<p>PCA projections (<strong>X’</strong>) preserve the total variance
+(inertia) of the original dataset <strong>X</strong>, only that this
+variance is “allocated” differently among the PCs than it was in the
+original variables. The inertia can be computed easily: it’s the sum of
+variances of all variables, and thus it can be obtained either from
+<strong>C</strong> or from <strong>D</strong></p>
+<p><span class="math display">\[inertia(\mathbf{X}) = tr(\mathbf{C}) =
+tr(\mathbf{D}) \]</span> (Here <span class="math inline">\(tr()\)</span>
+denotes the trace of a matrix, defined as the sum of the elements on its
+main diagonal).</p>
+<p>We can find the percentage of the total variance (or in other words:
+the amount of inertia) retained by each PC doing <span class="math inline">\(\frac{\lambda_i}{tr(\mathbf{D}))}·100\)</span>.</p>
+</div>
+<div id="kernel-pca" class="section level2">
+<h2>Kernel PCA</h2>
+<p>(Note: if you need more information about kernel functions, please
+take a look at the corresponding vignette)</p>
+<div id="linear-kernel" class="section level3">
+<h3>Linear kernel</h3>
+<p>Now, we can demonstrate that a kernel PCA using the linear kernel is
+the same than the old plain PCA. As before, we work with the centered
+dataset <strong>X</strong>; but this time we will not focus on its
+covariance matrix <strong>C</strong>, but on its Gram matrix. The Gram
+matrix of a set of vectors (in our case, each one of the samples placed
+on the rows of <strong>X</strong>) is the matrix of their inner
+products: the linear kernel matrix. We should call this matrix
+<strong>G</strong>:</p>
+<p><span class="math display">\[\mathbf{G} =  \mathbf{XX^T}\]</span>
+<strong>G</strong> has dimension <em>N×N</em>, is squared, symmetric and
+PSD. As was the case of <strong>C</strong>, the eigendecomposition and
+the SVD of <strong>G</strong> have equivalent results. Thus, we may
+write the eigendecomposition of <strong>G</strong> as:</p>
+<p><span class="math display">\[\mathbf{G}=\mathbf{U \Lambda^2
+U}\]</span> (Remember that eigenvalues and singular values are related:
+<span class="math inline">\(\lambda_i = s_i^2\)</span>.)</p>
+<p>Finding the PCs in this case is straightforward: <span class="math inline">\(\mathbf{X&#39;}=\mathbf{U \Lambda}\)</span>, as
+stated before. Moreover, if we want a perfect match with the eigenvalues
+of <strong>C</strong>, we should scale them by <em>N - 1</em>. Most of
+the time this scaling is irrelevant because it does not change the
+projection <em>per se</em>, only the range of values of the PCs. An
+exception for this rule arises when computing the inertia. In this case
+we are dealing with a sum of variances, so:</p>
+<p><span class="math display">\[inertia(\mathbf{X}) = tr(\mathbf{C}) =
+\frac{tr(\mathbf{G})}{N-1} \]</span> We can compute the inertia from
+<strong>G</strong> because this matrix is closely related to
+<strong>C</strong>: both have the same set of eigenvalues (once we scale
+by <em>N - 1</em>). This is very convenient, since the trace of a matrix
+can be computed as the sum of all its eigenvalues. However, there is a
+drawback in using <strong>G</strong>: we cannot obtain
+<strong>V</strong> (the projection axes). Luckily, this doesn’t hinder
+our ability to project new samples as we did in old plain PCA. A new
+sample (<span class="math inline">\(\mathbf{x}\)</span>) will be
+compared against all samples in <strong>X</strong> using the kernel
+function, which (as we are working with the linear kernel right now) is
+the dot product. If we call the resulting vector <strong>k</strong> (row
+vector of length <em>N</em>):</p>
+<p><span class="math display">\[ \mathbf{k} = \mathbf{xX^T}\]</span></p>
+<p>we can project this new sample with:</p>
+<p><span class="math display">\[\mathbf{x&#39;}=\mathbf{kU
+\Lambda^{-1}}\]</span></p>
+</div>
+<div id="rest-of-kernels" class="section level3">
+<h3>Rest of kernels</h3>
+<p>When using a kernel function different from the linear kernel, we are
+implicitly mapping the original dataset to another space, the so-called
+<strong>feature space</strong>. That is:</p>
+<p><span class="math display">\[x → φ(x)\]</span> <span class="math display">\[\mathbf{K_{ij}} = k(x_i , x_j ) =
+&lt;φ(x_i),φ(x_j)&gt;\]</span> <strong>K</strong> (dimension:
+<em>NxN</em>), the kernel matrix, contains the results of this pairwise
+evaluation over all samples (<strong>G</strong> is a particular case
+when using the linear kernel). The kernel PCA is obtained doing the SVD
+or the eigendecomposition of <strong>K</strong>, which results in: <span class="math display">\[\mathbf{K}=\mathbf{U \Lambda^2 U}\]</span> Now we
+can talk properly of “kernel PCA”. Under the hood, it’s a PCA that takes
+place in feature space. The result we will see (<span class="math inline">\(\mathbf{X&#39;}=\mathbf{U \Lambda}\)</span>) is
+this PCA projected back to the original (input) space. Remember when we
+said that <strong>V</strong> cannot be computed from <strong>K</strong>?
+This is because the Principal Axes now live in feature space. In fact,
+we already faced this very problem with the linear kernel. However, as
+the linear kernel is the only kernel whose feature space is the input
+space, relying on the SVD of <strong>X</strong> (or on the
+eigendecomposition of <strong>C</strong>) to compute <strong>V</strong>
+was an option, while with the rest of kernels this is not. In principle,
+we could perform a SVD of the data mapped onto the feature space, but
+the problem is that, for a <em>lot</em> of kernels, computing <span class="math inline">\(φ(x)\)</span> is not trivial.</p>
+<p>Another closely-related question is variable centering. In kernel
+PCA, the PCA itself is performed in feature space, and so the variables
+should be centered there. There are good news though: 1) centering
+<strong>K</strong> is equivalent to centering the data mapped onto the
+feature space, and 2) the former operation is way easier than the later.
+In fact, a kernel matrix is centered doing:</p>
+<p><span class="math display">\[\mathbf{\tilde{K}} =
+\mathbf{HKH}\]</span> where <span class="math inline">\(\mathbf{H} =
+\mathbf{I} - \frac{1}{N}\mathbf{11^T}\)</span>, <strong>I</strong> is
+the identity matrix, and <span class="math inline">\(\mathbf{1}\)</span>
+the matrix of all 1s.</p>
+<p>The projection of new samples is done as stated in <a href="#linear-kernel">Linear kernel</a>. The only difference is that now
+<strong>k</strong> is obtained with a kernel different to the linear
+kernel.</p>
+</div>
+<div id="advantages-of-kernel-pca" class="section level3">
+<h3>Advantages of kernel PCA</h3>
+<p>In the last subsection we have seen a drawback of using kernel PCA:
+we cannot compute <strong>V</strong> explicitly, and so we don’t know
+the contributions of the original variables to the PCs… that is, unless
+we perform some extra step, like computing a PCA on the side. Then, why
+bother doing kernel PCA at all? At least two reasons come to mind:</p>
+<ul>
+<li><p>The old plain PCA requires real-valued datasets, while kernels
+allow us to work with virtually any kind of data. If we use the right
+kernel, the kernel PCA will obtain projections and plots of <em>any</em>
+set of samples we are interested in, <em>independently</em> of the type
+of data: categorical, ordinal, strings, graphs, …</p></li>
+<li><p>Old plain PCA projects data in a linear way (remember: PCs are a
+linear combinations of the original variables), but kernel PCA is not
+restricted to do so. Thus, it’s a useful technique even when working
+with real data: if we choose a non-linear kernel, the resulting
+projection will also be non-linear.</p></li>
+</ul>
+</div>
+<div id="kerntools-implementation" class="section level3">
+<h3><code>kerntools</code> implementation</h3>
+<p><code>kerntools</code> is a kernel-focused package, and for that
+reason the PCAs are computed from the SVD of a kernel matrix. Between
+SVD and eigendecomposition, this package prefers the former approach for
+its higher numerical stability. PCA has several R implementations
+already, of which <code>stats::prcomp()</code> and
+<code>stats::princomp()</code> are the most used and well-known. The
+former computes the PCA from the SVD of the original dataset, while the
+latter relies on eigendecomposition. Now, we may compare the results of
+these three packages:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>iris_feat <span class="ot">&lt;-</span> iris[,<span class="fu">c</span>( <span class="st">&quot;Sepal.Length&quot;</span>,<span class="st">&quot;Sepal.Width&quot;</span>,<span class="st">&quot;Petal.Length&quot;</span>,<span class="st">&quot;Petal.Width&quot;</span>)]</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="co"># The variables are centered but not standardized:</span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>iris_prcomp <span class="ot">&lt;-</span> <span class="fu">prcomp</span>(iris_feat,<span class="at">center =</span> <span class="cn">TRUE</span>,<span class="at">scale. =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>iris_princomp <span class="ot">&lt;-</span> <span class="fu">princomp</span>(iris_feat, <span class="at">cor =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>iris_kerntools <span class="ot">&lt;-</span> <span class="fu">kPCA</span>(<span class="fu">Linear</span>(iris_feat),<span class="at">center=</span><span class="cn">TRUE</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a><span class="fu">head</span>(iris_prcomp<span class="sc">$</span>x)</span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a><span class="co">#&gt;            PC1        PC2         PC3          PC4</span></span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="co">#&gt; [1,] -2.684126 -0.3193972  0.02791483  0.002262437</span></span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="co">#&gt; [2,] -2.714142  0.1770012  0.21046427  0.099026550</span></span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a><span class="co">#&gt; [3,] -2.888991  0.1449494 -0.01790026  0.019968390</span></span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a><span class="co">#&gt; [4,] -2.745343  0.3182990 -0.03155937 -0.075575817</span></span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a><span class="co">#&gt; [5,] -2.728717 -0.3267545 -0.09007924 -0.061258593</span></span>
+<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a><span class="co">#&gt; [6,] -2.280860 -0.7413304 -0.16867766 -0.024200858</span></span>
+<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a><span class="fu">head</span>(iris_princomp<span class="sc">$</span>scores)</span>
+<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a><span class="co">#&gt;         Comp.1     Comp.2      Comp.3       Comp.4</span></span>
+<span id="cb1-18"><a href="#cb1-18" tabindex="-1"></a><span class="co">#&gt; [1,] -2.684126  0.3193972  0.02791483  0.002262437</span></span>
+<span id="cb1-19"><a href="#cb1-19" tabindex="-1"></a><span class="co">#&gt; [2,] -2.714142 -0.1770012  0.21046427  0.099026550</span></span>
+<span id="cb1-20"><a href="#cb1-20" tabindex="-1"></a><span class="co">#&gt; [3,] -2.888991 -0.1449494 -0.01790026  0.019968390</span></span>
+<span id="cb1-21"><a href="#cb1-21" tabindex="-1"></a><span class="co">#&gt; [4,] -2.745343 -0.3182990 -0.03155937 -0.075575817</span></span>
+<span id="cb1-22"><a href="#cb1-22" tabindex="-1"></a><span class="co">#&gt; [5,] -2.728717  0.3267545 -0.09007924 -0.061258593</span></span>
+<span id="cb1-23"><a href="#cb1-23" tabindex="-1"></a><span class="co">#&gt; [6,] -2.280860  0.7413304 -0.16867766 -0.024200858</span></span>
+<span id="cb1-24"><a href="#cb1-24" tabindex="-1"></a><span class="fu">head</span>(iris_kerntools[,<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>])</span>
+<span id="cb1-25"><a href="#cb1-25" tabindex="-1"></a><span class="co">#&gt;         PC1        PC2         PC3          PC4</span></span>
+<span id="cb1-26"><a href="#cb1-26" tabindex="-1"></a><span class="co">#&gt; 1 -2.684126  0.3193972  0.02791483  0.002262437</span></span>
+<span id="cb1-27"><a href="#cb1-27" tabindex="-1"></a><span class="co">#&gt; 2 -2.714142 -0.1770012  0.21046427  0.099026550</span></span>
+<span id="cb1-28"><a href="#cb1-28" tabindex="-1"></a><span class="co">#&gt; 3 -2.888991 -0.1449494 -0.01790026  0.019968390</span></span>
+<span id="cb1-29"><a href="#cb1-29" tabindex="-1"></a><span class="co">#&gt; 4 -2.745343 -0.3182990 -0.03155937 -0.075575817</span></span>
+<span id="cb1-30"><a href="#cb1-30" tabindex="-1"></a><span class="co">#&gt; 5 -2.728717  0.3267545 -0.09007924 -0.061258593</span></span>
+<span id="cb1-31"><a href="#cb1-31" tabindex="-1"></a><span class="co">#&gt; 6 -2.280860  0.7413304 -0.16867766 -0.024200858</span></span></code></pre></div>
+<p>Feature centering in <code>stats::prcomp(..., center = TRUE)</code>
+and <code>stats::princomp(..., cor = FALSE)</code> is done substracting
+the mean of each feature of the dataset, while
+<code>kPCA(..., center=TRUE)</code> performs the kernel matrix centering
+explained in <a href="#rest-of-kernels">Rest of kernels</a>. In any
+case, it can be seen than the results are identical. Sometimes, there
+are PCs with inverted signs. This might be a bit annoying, as the
+projection plot will also be inverted, but beyond that, it bears no
+special relevance for the PCA. Signs are arbitrary and depend on the
+implementation of the underlying algorithm and, even, the specific build
+of R.</p>
+<p>Thus, the main difference between the <code>kerntools</code> and the
+other two approaches is that <strong>V</strong>, the matrix of Principal
+Axes, is not computed by <code>kPCA()</code>. This is a pity because
+<strong>V</strong> relates the original variables to the Principal Axes,
+telling us how much the former contribute to the latter. This
+information is straightforward in <code>prcomp()</code> and
+<code>princomp()</code> under the name “rotation” or “loadings”:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>iris_prcomp<span class="sc">$</span>rotation</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co">#&gt;                      PC1         PC2         PC3        PC4</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co">#&gt; Sepal.Length  0.36138659 -0.65658877  0.58202985  0.3154872</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co">#&gt; Sepal.Width  -0.08452251 -0.73016143 -0.59791083 -0.3197231</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co">#&gt; Petal.Length  0.85667061  0.17337266 -0.07623608 -0.4798390</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="co">#&gt; Petal.Width   0.35828920  0.07548102 -0.54583143  0.7536574</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>iris_princomp<span class="sc">$</span>loadings</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co">#&gt; Loadings:</span></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="co">#&gt;              Comp.1 Comp.2 Comp.3 Comp.4</span></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="co">#&gt; Sepal.Length  0.361  0.657  0.582  0.315</span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a><span class="co">#&gt; Sepal.Width          0.730 -0.598 -0.320</span></span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a><span class="co">#&gt; Petal.Length  0.857 -0.173        -0.480</span></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="co">#&gt; Petal.Width   0.358        -0.546  0.754</span></span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a><span class="co">#&gt;                Comp.1 Comp.2 Comp.3 Comp.4</span></span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="co">#&gt; SS loadings      1.00   1.00   1.00   1.00</span></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="co">#&gt; Proportion Var   0.25   0.25   0.25   0.25</span></span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a><span class="co">#&gt; Cumulative Var   0.25   0.50   0.75   1.00</span></span></code></pre></div>
+<p>To do the same with <code>kerntools</code>, we can use the
+<code>kPCA_imp()</code> function. As the contributions cannot be
+obtained from the kernel matrix, this function computes the SVD of the
+dataset (as does <code>prcomp()</code>):</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>iris_pcs <span class="ot">&lt;-</span> <span class="fu">kPCA_imp</span>(iris_feat,<span class="at">center =</span> <span class="cn">TRUE</span>, <span class="at">projected =</span> iris_kerntools)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co">#&gt; Do not use this function if the PCA was created with the RBF,</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt;           Laplacian, Bray-Curtis, Jaccard/Ruzicka, or Kendall&#39;s tau kernels</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="fu">t</span>(iris_pcs<span class="sc">$</span>loadings)</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt;                      PC1         PC2         PC3        PC4</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt; Sepal.Length  0.36138659  0.65658877  0.58202985  0.3154872</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt; Sepal.Width  -0.08452251  0.73016143 -0.59791083 -0.3197231</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt; Petal.Length  0.85667061 -0.17337266 -0.07623608 -0.4798390</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt; Petal.Width   0.35828920 -0.07548102 -0.54583143  0.7536574</span></span></code></pre></div>
+<p>(The parameter <code>projected</code> can be NULL. However, if the
+user gives the PCA projection (generated with <code>kPCA()</code>
+wherever possible), this may save some computation time.)</p>
+<p>The PCs’ sign inversions will also reappear here. Furthermore, it’s
+important to highlight that, when <em>N &lt; D</em>, <code>kPCA()</code>
+throws an error and says that contributions cannot be computed. This is
+because the problem is <em>underdetermined</em>. In fact,
+<code>stats::princomp()</code> will also throw an error, and in the case
+of <code>stats::prcomp()</code>, the last <em>D - N</em> rows in the
+“loadings” matrix will be all 0.</p>
+<p>In this example we’ve just seen, the kernel used was the linear
+kernel. However, remember that 1) in all the other kernels the PCA is
+computed in feature space, and 2) depending of the kernel, this may be
+difficult to compute explicitly. Even then, <code>kPCA_imp()</code> can
+be used to obtain the contributions of each feature in this feature
+space… if the user has this information. As it happens, there are
+kernels functions implemented in <code>kerntools</code> that return the
+data mapped onto feature space. This is the case, for instance, of the
+Dirac kernel for categorical variables:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">colnames</span>(showdata)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Favorite.color&quot;   &quot;Favorite.actress&quot; &quot;Favorite.actor&quot;   &quot;Favorite.show&quot;   </span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&gt; [5] &quot;Liked.new.show&quot;</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>categdata <span class="ot">&lt;-</span> <span class="fu">Dirac</span>(showdata,<span class="at">feat_space =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>K <span class="ot">&lt;-</span> categdata<span class="sc">$</span>K</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>FS <span class="ot">&lt;-</span> categdata<span class="sc">$</span>feat_space</span></code></pre></div>
+<p>Here we have <code>K</code>, the Dirac kernel matrix, and
+<code>FS</code>, the data mapped onto the feature space. The kernel PCA
+is generated from <code>K</code>, while <code>FS</code> allows us to
+compute the contributions:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>dirac_kpca <span class="ot">&lt;-</span> <span class="fu">kPCA</span>(K, <span class="at">center =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>dirac_pcs <span class="ot">&lt;-</span> <span class="fu">kPCA_imp</span>(FS,<span class="at">center =</span> <span class="cn">TRUE</span>, <span class="at">projected =</span> dirac_kpca)</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co">#&gt; Do not use this function if the PCA was created with the RBF,</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co">#&gt;           Laplacian, Bray-Curtis, Jaccard/Ruzicka, or Kendall&#39;s tau kernels</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">t</span>(dirac_pcs<span class="sc">$</span>loadings[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>,]) )</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co">#&gt;                                   PC1         PC2          PC3</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#&gt; Favorite.color_black      0.087892109  0.23267429  0.003946556</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt; Favorite.color_blue      -0.028500847 -0.09026338 -0.384156531</span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt; Favorite.color_green      0.021822053  0.09417427  0.038279518</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt; Favorite.color_grey       0.004757800  0.01565134  0.012147679</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt; Favorite.color_lightblue -0.025407085 -0.03503713 -0.065385171</span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#&gt; Favorite.color_orange     0.001037384 -0.09856494  0.027034689</span></span></code></pre></div>
+<p>etc. (For the sake of clarity, only the 3 first PCs are shown
+here).</p>
+</div>
+</div>
+<div id="coinertia-analysis-using-kernels" class="section level2">
+<h2>Coinertia analysis using kernels</h2>
+<div id="introduction-1" class="section level3">
+<h3>Introduction</h3>
+<p>The Coinertia analysis (<strong>CIA</strong>) is a method that
+identifies trends or co-relationships between datasets. These datasets
+are related somehow: for instance, the same individuals, in the same
+order, are found in all datasets. The <strong>coinertia</strong> between
+2 datasets <strong>X</strong> and <strong>B</strong> with the same
+number of rows and (thus, <strong>X</strong> has dimension <span class="math inline">\(N\)</span> x <span class="math inline">\(D_1\)</span> and <strong>B</strong> <span class="math inline">\(N\)</span> x <span class="math inline">\(D_2\)</span>) is the squared sum of covariances
+between all pairwise combinations of variables from datasets
+<strong>X</strong> and <strong>B</strong>:</p>
+<p><span class="math display">\[coinertia(\mathbf{X},\mathbf{B}) =
+\sum_{i=1}^{D_1}\sum_{j=1}^{D_2} {\mathbf{X_i^TB_j}}^2 \]</span> (Of
+course, to work with true covariances, both datasets should be centered
+in advance).</p>
+<p>The projection obtained with CIA is conceptually similar to perform a
+PCA of the table of cross-covariance between the two datasets. Thus, we
+can see that these two methods are related, although they have different
+priorities: in PCA we maximize the variance, while CIA prioritizes the
+squared covariance. In other words: the first two co-inertia axes, <span class="math inline">\(a_1\)</span> and <span class="math inline">\(b_1\)</span>, retain the maximum covariance when
+projecting <strong>X</strong> onto <span class="math inline">\(a_1\)</span> and and <strong>B</strong> onto <span class="math inline">\(b_1\)</span>. This is useful to find co-structures
+in the two datasets. Furthermore, we can define the <strong>RV
+coefficient</strong>, which computes the amount of similarity between
+<strong>X</strong> and <strong>B</strong>:</p>
+<p><span class="math display">\[RV =
+\frac{coinertia(\mathbf{X,B})}{\sqrt{coinertia(\mathbf{X,X})}\sqrt{coinertia(\mathbf{B,B})}}\]</span></p>
+<p>This is a correlation coefficient that ranges between 0 and 1. The
+higher the RV, the higher the correlation between <strong>X</strong> and
+<strong>B</strong>.</p>
+<p>Typically, CIA is performed over two PCA projections
+<strong>X’</strong> and <strong>B’</strong> (sometimes, other
+dimensionality reduction methods are used, like Multidimensional
+Scaling). In that case, the variables that are compared are not the
+original variables, but the PCs. However, if the full rank projection is
+used (that is: if we use all PCs), <span class="math inline">\(RV(\mathbf{X,B})\)</span> should be equivalent to
+<span class="math inline">\(RV(\mathbf{X&#39;,B&#39;})\)</span>.</p>
+</div>
+<div id="kernel-approach" class="section level3">
+<h3>Kernel approach</h3>
+<p>If now we denote as <span class="math inline">\(\tilde{G}_X\)</span>
+the centered linear kernel matrix of <strong>X</strong>, and <span class="math inline">\(\tilde{G}_B\)</span> that of <strong>B</strong>,
+we can compute the coinertia as the trace of their product:</p>
+<p><span class="math display">\[coinertia(\mathbf{\tilde{G}_X},\mathbf{\tilde{G}_B})
+= tr(\mathbf{\tilde{G}_X}\mathbf{\tilde{G}_B})\]</span> If we substitute
+this in the RV coefficient formula:</p>
+<p><span class="math display">\[Alignment =
+\frac{tr(\mathbf{\tilde{G}_X}\mathbf{\tilde{G}_B})}{\sqrt{tr(\mathbf{\tilde{G}_X}\mathbf{\tilde{G}_B})}\sqrt{tr(\mathbf{\tilde{G}_X}\mathbf{\tilde{G}_B})}}\]</span>
+Thus, kernel matrices give us an alternative way of computing both
+coinertia and the RV coefficient. And, just as explained in the <a href="#rest-of-kernels">Rest of kernels</a> subsection, CIA can also be
+“kernelized”. In fact, the RV coefficient between kernel matrices (not
+restricted to the linear kernel) is already known in some fields under
+the name <em>kernel alignment</em>. This measures the similarity between
+two datasets in the feature space of the kernel. This datasets can be
+centered (if we follow the idea of the typical PCA and CIA explained
+along this document), but also can be not. Thus, we have a more general
+expression:</p>
+<p><span class="math display">\[Alignment =
+\frac{tr(\mathbf{K_X}\mathbf{K_B})}{\sqrt{tr(\mathbf{K_X}\mathbf{K_X})}\sqrt{tr(\mathbf{K_B}\mathbf{K_B}})}\]</span>
+(here <strong>K</strong> can denote centered as well as un-centered
+kernel matrices).</p>
+<p>As in the case of kernel PCA, this expression allows us to compare
+datasets even when they are not real-valued (categorical data, ordinal
+data, strings or text, etc.). Moreover, this “alignment” itself is, in
+fact, another kernel function: the Frobenius kernel (refer to the
+“Kernel-functions” vignette for more info). Thus, the matrix containing
+the RV coefficients/alignments between &gt; 2 datasets can be studied
+and processed like any other kernel matrix. For example, if we wanted to
+check visually which datasets are more similar, we could do a kernel PCA
+plot of this alignment matrix.</p>
+</div>
+<div id="kerntools-implementation-1" class="section level3">
+<h3><code>kerntools</code> implementation</h3>
+<p>Right now, the only part of CIA that can be computed with
+<code>kerntools</code> is the RV coefficient. <code>simK()</code>
+returns the pairwise kernel alignment between kernel matrices:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="do">## Example using random datasets</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>data1 <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rnorm</span>(<span class="dv">50</span>),<span class="at">ncol=</span><span class="dv">5</span>,<span class="at">nrow=</span><span class="dv">10</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>data2 <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rnorm</span>(<span class="dv">50</span>),<span class="at">ncol=</span><span class="dv">5</span>,<span class="at">nrow=</span><span class="dv">10</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>data3 <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rnorm</span>(<span class="dv">50</span>),<span class="at">ncol=</span><span class="dv">5</span>,<span class="at">nrow=</span><span class="dv">10</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>K1 <span class="ot">&lt;-</span> <span class="fu">Linear</span>(data1)</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>K2 <span class="ot">&lt;-</span> <span class="fu">Linear</span>(data2)</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>K3 <span class="ot">&lt;-</span> <span class="fu">Linear</span>(data3)</span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>K1 <span class="ot">&lt;-</span> <span class="fu">centerK</span>(K1)</span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>K2 <span class="ot">&lt;-</span> <span class="fu">centerK</span>(K2)</span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>K3 <span class="ot">&lt;-</span> <span class="fu">centerK</span>(K3)</span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="fu">simK</span>(<span class="fu">list</span>(<span class="at">data1=</span>K1,<span class="at">data2=</span>K2,<span class="at">data3=</span>K3))</span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="co">#&gt; Remember that Klist should contain only kernel matrices (i.e. squared, symmetric and PSD).</span></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="co">#&gt;   This function does NOT verify the symmetry and PSD criteria.</span></span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="co">#&gt;           data1     data2     data3</span></span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a><span class="co">#&gt; data1 1.0000000 0.3566513 0.3760687</span></span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a><span class="co">#&gt; data2 0.3566513 1.0000000 0.3887888</span></span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a><span class="co">#&gt; data3 0.3760687 0.3887888 1.0000000</span></span></code></pre></div>
+<p>As explained before, if 1) the linear kernel is used, 2) the kernel
+matrix is centered / the original datasets are centered, the results of
+<code>simK()</code> will be equivalent to the RV coefficient as computed
+by other R packages. If your goal is doing a complete CIA, I recommend
+using <code>ade4::coinertia()</code>. But if you only need computing the
+similarity between some datasets (especially if they consist of
+different types of data), <code>kerntools</code> will work fine:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="do">## Example using random datasets</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>data1 <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rnorm</span>(<span class="dv">50</span>),<span class="at">ncol=</span><span class="dv">5</span>,<span class="at">nrow=</span><span class="dv">10</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>data2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;flowing&quot;</span>,<span class="st">&quot;flower&quot;</span>,<span class="st">&quot;cauliflower&quot;</span>,<span class="st">&quot;thing&quot;</span>,<span class="st">&quot;water&quot;</span>,<span class="st">&quot;think&quot;</span>,<span class="st">&quot;float&quot;</span>,<span class="st">&quot;ink&quot;</span>,<span class="st">&quot;wait&quot;</span>,<span class="st">&quot;deaf&quot;</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>data3 <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">sample</span>(LETTERS[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>],<span class="dv">50</span>,<span class="at">replace=</span><span class="cn">TRUE</span>),<span class="at">ncol=</span><span class="dv">5</span>,<span class="at">nrow=</span><span class="dv">10</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>K1 <span class="ot">&lt;-</span> <span class="fu">Linear</span>(data1)</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>K2 <span class="ot">&lt;-</span> <span class="fu">Spectrum</span>(data2,<span class="at">alphabet =</span> letters,<span class="at">l =</span> <span class="dv">2</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>K3 <span class="ot">&lt;-</span> <span class="fu">Dirac</span>(data3,<span class="at">comp =</span> <span class="st">&quot;sum&quot;</span>)</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="fu">simK</span>(<span class="fu">list</span>(<span class="at">Real=</span>K1,<span class="at">String=</span>K2,<span class="at">Categorical=</span>K3))</span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt; Remember that Klist should contain only kernel matrices (i.e. squared, symmetric and PSD).</span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt;   This function does NOT verify the symmetry and PSD criteria.</span></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="co">#&gt;                  Real    String Categorical</span></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="co">#&gt; Real        1.0000000 0.3534200   0.4031557</span></span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="co">#&gt; String      0.3534200 1.0000000   0.6969794</span></span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="co">#&gt; Categorical 0.4031557 0.6969794   1.0000000</span></span></code></pre></div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
