@@ -460,7 +460,7 @@ I\!R}^D\)</span>.</p>
 <p>The Linear kernel is the dot product of two real vectors:</p>
 <p><span class="math display">\[Linear(\mathbf{x_i},\mathbf{x_j}) =
 \mathbf{x_i}^T\mathbf{x_j}\]</span></p>
-<p>It can take positive values, negative values, and even be zero.
+<p>It can return positive values, negative values, and even be zero.
 Obviously, it has a linear nature. Thus, if we use it in a “kernelized”
 machine learning method, the output will be the same that when using the
 non-kernelized method (for instance: linear kPCA is equivalent to
@@ -562,7 +562,7 @@ compute the feature space of the RBF kernel.</p>
 <h3>Laplacian kernel</h3>
 <div id="definition-2" class="section level4">
 <h4>Definition</h4>
-<p>The Laplacian kernel is similar to the RBF kernel. However, instead
+<p>The laplacian kernel is similar to the RBF kernel. However, instead
 of computing the L2 norm (Euclidean distance) between two real vectors,
 it uses the L1 norm:</p>
 <p><span class="math display">\[Laplacian(\mathbf{x_i},\mathbf{x_j}) =
@@ -667,9 +667,11 @@ in the simplex, which is a <em>D - 1</em> subspace of it. This is
 important because the variables are <em>not</em> independent, but parts
 of a whole. Thus, increasing the abundance of a feature within a sample
 decreases the abundance of the rest.</p>
-<p>The kernels that follow are well known in some fields, like ecology,
-because of their relation to widespread diversity metrics: the
-Bray-Curtis dissimilarity and the Ruzicka distance.</p>
+<p>The next two kernels are well known in some fields, like ecology
+studies, because of their relation to widespread diversity metrics: the
+Bray-Curtis dissimilarity and the Ruzicka distance. The latter two (the
+compositional linear and Aitchison kernels) are kernels specific for
+compositional data.</p>
 <div id="bray-curtis-kernel" class="section level3">
 <h3>Bray-Curtis kernel</h3>
 <div id="definition-4" class="section level4">
@@ -727,6 +729,101 @@ disputed.</p>
 <span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="fu">Ruzicka</span>(data)</span></code></pre></div>
 </div>
 </div>
+<div id="compositional-linear-kernel" class="section level3">
+<h3>Compositional-linear kernel</h3>
+<div id="definition-6" class="section level4">
+<h4>Definition</h4>
+<p>We define the compositional-linear kernel as:</p>
+<p><span class="math display">\[compLinear(\mathbf{x_i},\mathbf{x_j}) =
+\sum_{d=1}^D log(\frac{x_{id}}{geo(x_i)})·log(\frac{x_{jd}}{geo(x_j)})
+\]</span> It is analogous to the linear kernel and it can return
+positive values, negative values, and even be zero. We can apply the
+cosine normalization, so a score of 1 implies that <span class="math inline">\(\mathbf{x_i},\mathbf{x_j}\)</span> are equal,
+while lower values imply a lower similarity between <span class="math inline">\(\mathbf{x_i},\mathbf{x_j}\)</span> (see <a href="#linear-kernel">Linear kernel</a>).</p>
+</div>
+<div id="feature-space-4" class="section level4">
+<h4>Feature space</h4>
+<p>The feature space for the compositional-linear kernel is the centered
+log-ratio (clr) transformation of the original data.</p>
+</div>
+<div id="usage-6" class="section level4">
+<h4>Usage</h4>
+<p>Unlike the two previous kernels, doing:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="do">### Our example dataset contains the bacterial abundance of *D* species in *N* soil samples.</span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>data <span class="ot">&lt;-</span> soil<span class="sc">$</span>abund</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="fu">cLinear</span>(data)</span></code></pre></div>
+<p>will return an error. This is because compositional kernels require
+samples that are strictly positive. This is a problem, because in
+real-life, a lot of compositional datasets have zeroes. These zeroes can
+have different origins: for example, they may be structural, or they may
+be caused by a signal so small that falls below an instrument’s
+detection limit, etc. In any case, a zero-replacement strategy should be
+applied before computing this kernel. (Other possibilities include
+splitting the dataset, if we are sure that the zeroes are structural, or
+to sum columns, which is called “amalgamation” in Compositional Data
+Analysis. This is not always possible. In the case of the
+<code>soil</code> dataset, if we wanted to follow the latter route, we
+could sum all bacteria of the same species (or genus, or family), aiming
+for higher taxonomic ranks, but losing resolution in the process.) The
+two compositional kernels present in <code>kerntools</code> support a
+very simple built-in replacement strategy: replacing all zeroes by a
+pseudocount (i.e. a small value):</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="fu">cLinear</span>(soil<span class="sc">$</span>abund,<span class="at">zeros =</span> <span class="st">&quot;pseudo&quot;</span>)</span></code></pre></div>
+<p>(For more sophisticated approaches you may use other R packages like
+‘zCompositions’.)</p>
+<p>The feature space can be returned typing:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">cLinear</span>(soil<span class="sc">$</span>abund,<span class="at">zeros =</span> <span class="st">&quot;pseudo&quot;</span>,<span class="at">feat_space=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<p>And the cosine-normalization of this kernel can be done with:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="fu">cLinear</span>(soil<span class="sc">$</span>abund,<span class="at">zeros =</span> <span class="st">&quot;pseudo&quot;</span>, <span class="at">cos.norm =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p>If both <code>cos.norm</code> and <code>feat_space</code> are TRUE,
+the feature space will be scaled accordingly.</p>
+</div>
+</div>
+<div id="aitchison-kernel" class="section level3">
+<h3>Aitchison kernel</h3>
+<div id="definition-7" class="section level4">
+<h4>Definition</h4>
+<p>The Aitchison kernel is analogous to the RBF kernel but for
+compositional data:</p>
+<p><span class="math display">\[Aitchison(\mathbf{x_i},\mathbf{x_j}) =
+exp(-\gamma \sum_{d=1}^D
+{log(\frac{x_{id}}{geo(x_i)})-log(\frac{x_{jd}}{geo(x_j)}) }^2)\]</span>
+where <span class="math inline">\(\mathbf{x_i},\mathbf{x_j}\)</span>
+represent the abundances in two different samples, <span class="math inline">\(geo(.)\)</span> denotes the geometric mean, and
+<span class="math inline">\(\gamma &gt; 0\)</span> is a hyperparameter
+that has to be tuned. This non-linear kernel derives from the Aitchison
+distance, which is Euclidean, and thus the previous definition results
+in a valid kernel. The output of this kernel ranges between 0 and 1; the
+higher the Aitchison kernel value, the higher the similarity between
+<span class="math inline">\(\mathbf{x_i},\mathbf{x_j}\)</span>. The
+logarithm terms can be identified as the compositional
+clr-transformation of the original data. The relationship between this
+kernel and the compositional-linear kernel is the same than between the
+RBF and the linear kernels.</p>
+</div>
+<div id="feature-space-5" class="section level4">
+<h4>Feature space</h4>
+<p>See: <a href="#rbf-kernel">RBF kernel</a>.</p>
+</div>
+<div id="usage-7" class="section level4">
+<h4>Usage</h4>
+<p>Again, doing:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="do">### Our example dataset contains the bacterial abundance of *D* species in *N* soil samples.</span></span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a><span class="fu">Aitchison</span>(soil<span class="sc">$</span>abund,<span class="at">g=</span><span class="fl">0.1</span>)</span></code></pre></div>
+<p>will return an error, for the very same reasons stated in the “Usage”
+subsection of <a href="#compositional-linear-kernel">Compositional-linear kernel</a>. A
+possible solution is replacing all zeroes by a pseudocount (i.e. a small
+value):</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="do">### Our example dataset contains the bacterial abundance of *D* species in *N* soil samples.</span></span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a><span class="fu">Aitchison</span>(soil<span class="sc">$</span>abund,<span class="at">zeros =</span> <span class="st">&quot;pseudo&quot;</span>, <span class="at">g=</span><span class="fl">0.1</span>)<span class="er">)</span></span></code></pre></div>
+<p>As always, <code>Aitchison(...,g)</code> is the value of the
+hyperparameter gamma, which should be chosen by the user. The same
+heuristics of the RBF kernel may be useful for choosing a good
+gamma.</p>
+<p>Finally, remember that <code>kerntools</code>’s implementation does
+not support computing the feature space of the Aitchison kernel.</p>
+</div>
+</div>
 </div>
 <div id="kernels-for-categorical-data" class="section level2">
 <h2>Kernels for categorical data</h2>
@@ -740,7 +837,7 @@ R, “data.frames” having columns of class “factor” can be used for this
 kind of data).</p>
 <div id="dirac-kernel" class="section level3">
 <h3>Dirac kernel</h3>
-<div id="definition-6" class="section level4">
+<div id="definition-8" class="section level4">
 <h4>Definition</h4>
 <p>First we define the Overlap kernel over a single categorical variable
 as:</p>
@@ -765,7 +862,7 @@ then cosine-normalizing it. When custom coefficients are used but <span class="m
 is a weighted average bounded between 0 and 1 (thus, trying to
 cosine-normalize it is useless).</p>
 </div>
-<div id="feature-space-4" class="section level4">
+<div id="feature-space-6" class="section level4">
 <h4>Feature space</h4>
 <p>We can map our data onto the feature space of the Overlap kernel via
 one-hot-encoding. That is: the map <span class="math inline">\(φ(x)\)</span> recodes a categorical variable
@@ -773,33 +870,33 @@ one-hot-encoding. That is: the map <span class="math inline">\(φ(x)\)</span> re
 <em>L</em> dummy variables (each one representing a given level) that
 can be 0 or 1. For instance, if we have a variable that can take three
 levels (“A”, “B” and “C”):</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>cat_feat <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">var=</span><span class="fu">factor</span>(<span class="fu">sample</span>(LETTERS[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>],<span class="dv">10</span>,<span class="at">replace =</span> <span class="cn">TRUE</span>)))</span>
-<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="fu">rownames</span>(cat_feat) <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span></span>
-<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>cat_feat</span>
-<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="co">#&gt;    var</span></span>
-<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="co">#&gt; 1    B</span></span>
-<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a><span class="co">#&gt; 2    C</span></span>
-<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a><span class="co">#&gt; 3    A</span></span>
-<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a><span class="co">#&gt; 4    A</span></span>
-<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a><span class="co">#&gt; 5    C</span></span>
-<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a><span class="co">#&gt; 6    B</span></span>
-<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a><span class="co">#&gt; 7    B</span></span>
-<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a><span class="co">#&gt; 8    B</span></span>
-<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a><span class="co">#&gt; 9    A</span></span>
-<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a><span class="co">#&gt; 10   B</span></span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a>cat_feat <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">var=</span><span class="fu">factor</span>(<span class="fu">sample</span>(LETTERS[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>],<span class="dv">10</span>,<span class="at">replace =</span> <span class="cn">TRUE</span>)))</span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a><span class="fu">rownames</span>(cat_feat) <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span></span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a>cat_feat</span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a><span class="co">#&gt;    var</span></span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a><span class="co">#&gt; 1    B</span></span>
+<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a><span class="co">#&gt; 2    C</span></span>
+<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a><span class="co">#&gt; 3    A</span></span>
+<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a><span class="co">#&gt; 4    A</span></span>
+<span id="cb18-9"><a href="#cb18-9" tabindex="-1"></a><span class="co">#&gt; 5    A</span></span>
+<span id="cb18-10"><a href="#cb18-10" tabindex="-1"></a><span class="co">#&gt; 6    B</span></span>
+<span id="cb18-11"><a href="#cb18-11" tabindex="-1"></a><span class="co">#&gt; 7    B</span></span>
+<span id="cb18-12"><a href="#cb18-12" tabindex="-1"></a><span class="co">#&gt; 8    B</span></span>
+<span id="cb18-13"><a href="#cb18-13" tabindex="-1"></a><span class="co">#&gt; 9    A</span></span>
+<span id="cb18-14"><a href="#cb18-14" tabindex="-1"></a><span class="co">#&gt; 10   A</span></span></code></pre></div>
 <p>the feature space for the Overlap kernel is:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="fu">dummy_data</span>(cat_feat)</span>
-<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="co">#&gt;    var_A var_B var_C</span></span>
-<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a><span class="co">#&gt; 1      0     1     0</span></span>
-<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="co">#&gt; 2      0     0     1</span></span>
-<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a><span class="co">#&gt; 3      1     0     0</span></span>
-<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a><span class="co">#&gt; 4      1     0     0</span></span>
-<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="co">#&gt; 5      0     0     1</span></span>
-<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a><span class="co">#&gt; 6      0     1     0</span></span>
-<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a><span class="co">#&gt; 7      0     1     0</span></span>
-<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a><span class="co">#&gt; 8      0     1     0</span></span>
-<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a><span class="co">#&gt; 9      1     0     0</span></span>
-<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a><span class="co">#&gt; 10     0     1     0</span></span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="fu">dummy_data</span>(cat_feat)</span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a><span class="co">#&gt;    var_A var_B var_C</span></span>
+<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a><span class="co">#&gt; 1      0     1     0</span></span>
+<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a><span class="co">#&gt; 2      0     0     1</span></span>
+<span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a><span class="co">#&gt; 3      1     0     0</span></span>
+<span id="cb19-6"><a href="#cb19-6" tabindex="-1"></a><span class="co">#&gt; 4      1     0     0</span></span>
+<span id="cb19-7"><a href="#cb19-7" tabindex="-1"></a><span class="co">#&gt; 5      1     0     0</span></span>
+<span id="cb19-8"><a href="#cb19-8" tabindex="-1"></a><span class="co">#&gt; 6      0     1     0</span></span>
+<span id="cb19-9"><a href="#cb19-9" tabindex="-1"></a><span class="co">#&gt; 7      0     1     0</span></span>
+<span id="cb19-10"><a href="#cb19-10" tabindex="-1"></a><span class="co">#&gt; 8      0     1     0</span></span>
+<span id="cb19-11"><a href="#cb19-11" tabindex="-1"></a><span class="co">#&gt; 9      1     0     0</span></span>
+<span id="cb19-12"><a href="#cb19-12" tabindex="-1"></a><span class="co">#&gt; 10     1     0     0</span></span></code></pre></div>
 <p>The feature space for the Dirac kernel results of “concatenating” the
 feature spaces for all <em>D</em> categorical variables. If the weights
 <span class="math inline">\(c_d \neq 1\)</span>, then data in feature
@@ -807,30 +904,30 @@ space should be scaled accordingly. For instance, if <span class="math inline">\
 stated before) is the same than cosine-normalize the Dirac kernel, then
 the feature space is normalized to unit length.</p>
 </div>
-<div id="usage-6" class="section level4">
+<div id="usage-8" class="section level4">
 <h4>Usage</h4>
 <p>In <code>kerntools</code>, we need a <em>NxD</em> dataset of class
 “matrix” (2-d dimensional array) that contains only characters, or
 instead a dataset of class “data.frame” (with all entries = “character”,
 or columns = “factor”). <code>showdata</code> is an example dataset that
 meets this requirements. The Dirac kernel can be called doing:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">Dirac</span>(showdata)</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="fu">Dirac</span>(showdata)</span></code></pre></div>
 <p>Moreover, if we want to compute the feature space too, we can
 type:</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="fu">Dirac</span>(showdata,<span class="at">feat_space =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="fu">Dirac</span>(showdata,<span class="at">feat_space =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <p>By default <code>Dirac(...,comp = &quot;sum&quot;)</code>; that is, all
 coefficients <span class="math inline">\(c_d\)</span> are set to 1. If
 we want the Dirac kernel computed as the mean of the Overlap kernel
 evaluations, we can do <code>Dirac(...,comp = &quot;mean&quot;)</code>. Instead,
 to have the average weighting according to some coefficients, we can
 do:</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>coeffs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">8</span>,<span class="dv">1</span><span class="sc">/</span><span class="dv">4</span>,<span class="dv">1</span><span class="sc">/</span><span class="dv">4</span>,<span class="dv">1</span><span class="sc">/</span><span class="dv">4</span>,<span class="dv">1</span><span class="sc">/</span><span class="dv">8</span>)</span>
-<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a><span class="fu">Dirac</span>(showdata, <span class="at">comp =</span> <span class="st">&quot;weighted&quot;</span>,  <span class="at">coeff=</span>coeffs)</span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a>coeffs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">8</span>,<span class="dv">1</span><span class="sc">/</span><span class="dv">4</span>,<span class="dv">1</span><span class="sc">/</span><span class="dv">4</span>,<span class="dv">1</span><span class="sc">/</span><span class="dv">4</span>,<span class="dv">1</span><span class="sc">/</span><span class="dv">8</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a><span class="fu">Dirac</span>(showdata, <span class="at">comp =</span> <span class="st">&quot;weighted&quot;</span>,  <span class="at">coeff=</span>coeffs)</span></code></pre></div>
 <p>The feature space returned by this function will change accordingly
 to the coefficients chosen. Of course,
 <code>Dirac(...,comp = &quot;mean&quot;)</code> is the same than doing:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a>coeffs <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">ncol</span>(showdata),<span class="fu">length</span>(showdata))</span>
-<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a><span class="fu">Dirac</span>(showdata, <span class="at">comp =</span> <span class="st">&quot;weighted&quot;</span>,  <span class="at">coeff=</span>coeffs)</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a>coeffs <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">ncol</span>(showdata),<span class="fu">length</span>(showdata))</span>
+<span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a><span class="fu">Dirac</span>(showdata, <span class="at">comp =</span> <span class="st">&quot;weighted&quot;</span>,  <span class="at">coeff=</span>coeffs)</span></code></pre></div>
 </div>
 </div>
 </div>
@@ -843,7 +940,7 @@ of <em>S</em> are called their <em>elements</em>, and we denote as <span class="
 number of elements it contains.</p>
 <div id="intersect-kernel" class="section level3">
 <h3>Intersect kernel</h3>
-<div id="definition-7" class="section level4">
+<div id="definition-9" class="section level4">
 <h4>Definition</h4>
 <p>Imagine that we have a dataset (size <em>N</em>) such as each sample
 is a set: <span class="math inline">\(S_1,...,S_N\)</span>. The most
@@ -877,7 +974,7 @@ over the univariate evaluations, the values for the Intersect-multi
 kernel range between 0 and 1, the 1 meaning that the two samples are
 equal, and 0 that they are completely different.</p>
 </div>
-<div id="feature-space-5" class="section level4">
+<div id="feature-space-7" class="section level4">
 <h4>Feature space</h4>
 <p>We can map our data onto the feature space of the Intersect kernel
 via a sort of one-hot-encoding. In this case, the map <span class="math inline">\(φ(S)\)</span> recodes a set coming from a universe
@@ -885,66 +982,66 @@ with <em>L</em> elements into <em>L</em> dummy variables (each one
 representing a given level) that can be 1, if a given element <em>l</em>
 is present in the set <em>S</em>, or 0 if it is absent. For example:</p>
 <p><strong>Favorite colors of 3 people:</strong></p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a>universe <span class="ot">&lt;-</span>  <span class="fu">c</span>(<span class="st">&quot;blue&quot;</span>,<span class="st">&quot;green&quot;</span>,<span class="st">&quot;lightblue&quot;</span>,<span class="st">&quot;orange&quot;</span>,<span class="st">&quot;purple&quot;</span>,<span class="st">&quot;red&quot;</span>,<span class="st">&quot;white&quot;</span>,<span class="st">&quot;yellow&quot;</span>)</span>
-<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>person1 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">6</span>, <span class="dv">8</span>)</span>
-<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a>person2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">8</span>)</span>
-<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a>person3 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>,  <span class="dv">6</span>)</span>
-<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a><span class="fu">list</span>(<span class="at">person1=</span>universe[person1],<span class="at">person2=</span>universe[person2],<span class="at">person3=</span>universe[person3])</span>
-<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a><span class="co">#&gt; $person1</span></span>
-<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a><span class="co">#&gt; [1] &quot;green&quot;  &quot;red&quot;    &quot;yellow&quot;</span></span>
-<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb18-9"><a href="#cb18-9" tabindex="-1"></a><span class="co">#&gt; $person2</span></span>
-<span id="cb18-10"><a href="#cb18-10" tabindex="-1"></a><span class="co">#&gt; [1] &quot;blue&quot;   &quot;yellow&quot;</span></span>
-<span id="cb18-11"><a href="#cb18-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb18-12"><a href="#cb18-12" tabindex="-1"></a><span class="co">#&gt; $person3</span></span>
-<span id="cb18-13"><a href="#cb18-13" tabindex="-1"></a><span class="co">#&gt; [1] &quot;green&quot;     &quot;lightblue&quot; &quot;red&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a>universe <span class="ot">&lt;-</span>  <span class="fu">c</span>(<span class="st">&quot;blue&quot;</span>,<span class="st">&quot;green&quot;</span>,<span class="st">&quot;lightblue&quot;</span>,<span class="st">&quot;orange&quot;</span>,<span class="st">&quot;purple&quot;</span>,<span class="st">&quot;red&quot;</span>,<span class="st">&quot;white&quot;</span>,<span class="st">&quot;yellow&quot;</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a>person1 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">6</span>, <span class="dv">8</span>)</span>
+<span id="cb24-3"><a href="#cb24-3" tabindex="-1"></a>person2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">8</span>)</span>
+<span id="cb24-4"><a href="#cb24-4" tabindex="-1"></a>person3 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>,  <span class="dv">6</span>)</span>
+<span id="cb24-5"><a href="#cb24-5" tabindex="-1"></a><span class="fu">list</span>(<span class="at">person1=</span>universe[person1],<span class="at">person2=</span>universe[person2],<span class="at">person3=</span>universe[person3])</span>
+<span id="cb24-6"><a href="#cb24-6" tabindex="-1"></a><span class="co">#&gt; $person1</span></span>
+<span id="cb24-7"><a href="#cb24-7" tabindex="-1"></a><span class="co">#&gt; [1] &quot;green&quot;  &quot;red&quot;    &quot;yellow&quot;</span></span>
+<span id="cb24-8"><a href="#cb24-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb24-9"><a href="#cb24-9" tabindex="-1"></a><span class="co">#&gt; $person2</span></span>
+<span id="cb24-10"><a href="#cb24-10" tabindex="-1"></a><span class="co">#&gt; [1] &quot;blue&quot;   &quot;yellow&quot;</span></span>
+<span id="cb24-11"><a href="#cb24-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb24-12"><a href="#cb24-12" tabindex="-1"></a><span class="co">#&gt; $person3</span></span>
+<span id="cb24-13"><a href="#cb24-13" tabindex="-1"></a><span class="co">#&gt; [1] &quot;green&quot;     &quot;lightblue&quot; &quot;red&quot;</span></span></code></pre></div>
 <p>The data mapped onto the feature space for this kernel is:</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a>colors <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>,<span class="at">nrow=</span><span class="dv">3</span>,<span class="at">ncol=</span><span class="fu">length</span>(universe))</span>
-<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a><span class="fu">rownames</span>(colors) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;person1&quot;</span>,<span class="st">&quot;person2&quot;</span>,<span class="st">&quot;person3&quot;</span>)</span>
-<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a><span class="fu">colnames</span>(colors) <span class="ot">&lt;-</span> universe</span>
-<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a>colors[<span class="dv">1</span>,person1] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a>colors[<span class="dv">2</span>,person2] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb19-6"><a href="#cb19-6" tabindex="-1"></a>colors[<span class="dv">3</span>,person3] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb19-7"><a href="#cb19-7" tabindex="-1"></a>colors</span>
-<span id="cb19-8"><a href="#cb19-8" tabindex="-1"></a><span class="co">#&gt;         blue green lightblue orange purple red white yellow</span></span>
-<span id="cb19-9"><a href="#cb19-9" tabindex="-1"></a><span class="co">#&gt; person1    0     1         0      0      0   1     0      1</span></span>
-<span id="cb19-10"><a href="#cb19-10" tabindex="-1"></a><span class="co">#&gt; person2    1     0         0      0      0   0     0      1</span></span>
-<span id="cb19-11"><a href="#cb19-11" tabindex="-1"></a><span class="co">#&gt; person3    0     1         1      0      0   1     0      0</span></span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a>colors <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>,<span class="at">nrow=</span><span class="dv">3</span>,<span class="at">ncol=</span><span class="fu">length</span>(universe))</span>
+<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a><span class="fu">rownames</span>(colors) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;person1&quot;</span>,<span class="st">&quot;person2&quot;</span>,<span class="st">&quot;person3&quot;</span>)</span>
+<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a><span class="fu">colnames</span>(colors) <span class="ot">&lt;-</span> universe</span>
+<span id="cb25-4"><a href="#cb25-4" tabindex="-1"></a>colors[<span class="dv">1</span>,person1] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb25-5"><a href="#cb25-5" tabindex="-1"></a>colors[<span class="dv">2</span>,person2] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb25-6"><a href="#cb25-6" tabindex="-1"></a>colors[<span class="dv">3</span>,person3] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb25-7"><a href="#cb25-7" tabindex="-1"></a>colors</span>
+<span id="cb25-8"><a href="#cb25-8" tabindex="-1"></a><span class="co">#&gt;         blue green lightblue orange purple red white yellow</span></span>
+<span id="cb25-9"><a href="#cb25-9" tabindex="-1"></a><span class="co">#&gt; person1    0     1         0      0      0   1     0      1</span></span>
+<span id="cb25-10"><a href="#cb25-10" tabindex="-1"></a><span class="co">#&gt; person2    1     0         0      0      0   0     0      1</span></span>
+<span id="cb25-11"><a href="#cb25-11" tabindex="-1"></a><span class="co">#&gt; person3    0     1         1      0      0   1     0      0</span></span></code></pre></div>
 <p>and now the Intersect kernel can be computed directly as the dot
 product between samples.</p>
 <p>If we use the Intersect-cosine, then the feature space is normalized
 accordingly to the unit vector:</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="fu">cosnormX</span>(colors)</span>
-<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a><span class="co">#&gt;              blue     green lightblue orange purple       red white    yellow</span></span>
-<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a><span class="co">#&gt; person1 0.0000000 0.5773503 0.0000000      0      0 0.5773503     0 0.5773503</span></span>
-<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a><span class="co">#&gt; person2 0.7071068 0.0000000 0.0000000      0      0 0.0000000     0 0.7071068</span></span>
-<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a><span class="co">#&gt; person3 0.0000000 0.5773503 0.5773503      0      0 0.5773503     0 0.0000000</span></span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a><span class="fu">cosnormX</span>(colors)</span>
+<span id="cb26-2"><a href="#cb26-2" tabindex="-1"></a><span class="co">#&gt;              blue     green lightblue orange purple       red white    yellow</span></span>
+<span id="cb26-3"><a href="#cb26-3" tabindex="-1"></a><span class="co">#&gt; person1 0.0000000 0.5773503 0.0000000      0      0 0.5773503     0 0.5773503</span></span>
+<span id="cb26-4"><a href="#cb26-4" tabindex="-1"></a><span class="co">#&gt; person2 0.7071068 0.0000000 0.0000000      0      0 0.0000000     0 0.7071068</span></span>
+<span id="cb26-5"><a href="#cb26-5" tabindex="-1"></a><span class="co">#&gt; person3 0.0000000 0.5773503 0.5773503      0      0 0.5773503     0 0.0000000</span></span></code></pre></div>
 <p>Moreover, the Intersect-multi kernel’s feature space results of
 “concatenating” the feature spaces of all sets associated to a sample,
 each one scaled accordingly by the weights <span class="math inline">\(c_d\)</span>.</p>
 </div>
-<div id="usage-7" class="section level4">
+<div id="usage-9" class="section level4">
 <h4>Usage</h4>
 <p><code>kerntools</code> implementation requires that the set members
 (elements) are character symbols (length=1) combined into a string.
 Compare this with the last example:</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a>universe <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;b&quot;</span>,<span class="st">&quot;g&quot;</span>,<span class="st">&quot;l&quot;</span>,<span class="st">&quot;o&quot;</span>,<span class="st">&quot;p&quot;</span>,<span class="st">&quot;r&quot;</span>,<span class="st">&quot;w&quot;</span>,<span class="st">&quot;y&quot;</span>)</span>
-<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a>colors <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="st">&quot;&quot;</span>,<span class="at">ncol=</span><span class="dv">1</span>,<span class="at">nrow=</span><span class="dv">3</span>)</span>
-<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a><span class="fu">rownames</span>(colors) <span class="ot">&lt;-</span>  <span class="fu">c</span>(<span class="st">&quot;person1&quot;</span>,<span class="st">&quot;person2&quot;</span>,<span class="st">&quot;person3&quot;</span>)</span>
-<span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a>colors[<span class="dv">1</span>,] <span class="ot">&lt;-</span><span class="fu">paste</span>(universe[person1],<span class="at">collapse=</span><span class="st">&quot;&quot;</span>)</span>
-<span id="cb21-5"><a href="#cb21-5" tabindex="-1"></a>colors[<span class="dv">2</span>,] <span class="ot">&lt;-</span><span class="fu">paste</span>(universe[person2],<span class="at">collapse=</span><span class="st">&quot;&quot;</span>)</span>
-<span id="cb21-6"><a href="#cb21-6" tabindex="-1"></a>colors[<span class="dv">3</span>,] <span class="ot">&lt;-</span><span class="fu">paste</span>(universe[person3],<span class="at">collapse=</span><span class="st">&quot;&quot;</span>)</span>
-<span id="cb21-7"><a href="#cb21-7" tabindex="-1"></a>colors</span>
-<span id="cb21-8"><a href="#cb21-8" tabindex="-1"></a><span class="co">#&gt;         [,1] </span></span>
-<span id="cb21-9"><a href="#cb21-9" tabindex="-1"></a><span class="co">#&gt; person1 &quot;gry&quot;</span></span>
-<span id="cb21-10"><a href="#cb21-10" tabindex="-1"></a><span class="co">#&gt; person2 &quot;by&quot; </span></span>
-<span id="cb21-11"><a href="#cb21-11" tabindex="-1"></a><span class="co">#&gt; person3 &quot;glr&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a>universe <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;b&quot;</span>,<span class="st">&quot;g&quot;</span>,<span class="st">&quot;l&quot;</span>,<span class="st">&quot;o&quot;</span>,<span class="st">&quot;p&quot;</span>,<span class="st">&quot;r&quot;</span>,<span class="st">&quot;w&quot;</span>,<span class="st">&quot;y&quot;</span>)</span>
+<span id="cb27-2"><a href="#cb27-2" tabindex="-1"></a>colors <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="st">&quot;&quot;</span>,<span class="at">ncol=</span><span class="dv">1</span>,<span class="at">nrow=</span><span class="dv">3</span>)</span>
+<span id="cb27-3"><a href="#cb27-3" tabindex="-1"></a><span class="fu">rownames</span>(colors) <span class="ot">&lt;-</span>  <span class="fu">c</span>(<span class="st">&quot;person1&quot;</span>,<span class="st">&quot;person2&quot;</span>,<span class="st">&quot;person3&quot;</span>)</span>
+<span id="cb27-4"><a href="#cb27-4" tabindex="-1"></a>colors[<span class="dv">1</span>,] <span class="ot">&lt;-</span><span class="fu">paste</span>(universe[person1],<span class="at">collapse=</span><span class="st">&quot;&quot;</span>)</span>
+<span id="cb27-5"><a href="#cb27-5" tabindex="-1"></a>colors[<span class="dv">2</span>,] <span class="ot">&lt;-</span><span class="fu">paste</span>(universe[person2],<span class="at">collapse=</span><span class="st">&quot;&quot;</span>)</span>
+<span id="cb27-6"><a href="#cb27-6" tabindex="-1"></a>colors[<span class="dv">3</span>,] <span class="ot">&lt;-</span><span class="fu">paste</span>(universe[person3],<span class="at">collapse=</span><span class="st">&quot;&quot;</span>)</span>
+<span id="cb27-7"><a href="#cb27-7" tabindex="-1"></a>colors</span>
+<span id="cb27-8"><a href="#cb27-8" tabindex="-1"></a><span class="co">#&gt;         [,1] </span></span>
+<span id="cb27-9"><a href="#cb27-9" tabindex="-1"></a><span class="co">#&gt; person1 &quot;gry&quot;</span></span>
+<span id="cb27-10"><a href="#cb27-10" tabindex="-1"></a><span class="co">#&gt; person2 &quot;by&quot; </span></span>
+<span id="cb27-11"><a href="#cb27-11" tabindex="-1"></a><span class="co">#&gt; person3 &quot;glr&quot;</span></span></code></pre></div>
 <p>That is a <em>NxD</em> “matrix” or “data.frame” containing
 characters. Each sample is in a different row. Now, you can do:</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a><span class="fu">Intersect</span>(colors,<span class="at">elements =</span> universe)</span></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a><span class="fu">Intersect</span>(colors,<span class="at">elements =</span> universe)</span></code></pre></div>
 <p>This function requires that we state the universe’s elements
 explicitly. The feature space can be returned too:</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a><span class="fu">Intersect</span>(colors, <span class="at">elements =</span> universe, <span class="at">feat_space =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a><span class="fu">Intersect</span>(colors, <span class="at">elements =</span> universe, <span class="at">feat_space =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <p>If data is multivariate (<span class="math inline">\(D&gt;1\)</span>
 columns, and each one contains a set feature), the universe should span
 all elements found in all the <em>D</em> sets. For instance, consider
@@ -953,40 +1050,40 @@ this second feature:</p>
 <p>(<em>Anna = A</em>; <em>Bernard = B</em>; <em>Cesc = C</em>;
 <em>Diana = D </em>; <em>Elsa = E </em>; <em>Fran = F</em>; <em>Gisele =
 G</em>; <em>Horaci = H</em>; <em>Iria = I</em>; <em>Jaume = J</em>)</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a>universe2 <span class="ot">&lt;-</span>  LETTERS[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>]</span>
-<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a>person1 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">9</span>,<span class="dv">10</span>)</span>
-<span id="cb24-3"><a href="#cb24-3" tabindex="-1"></a>person2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">4</span>,<span class="dv">6</span>,<span class="dv">7</span>)</span>
-<span id="cb24-4"><a href="#cb24-4" tabindex="-1"></a>person3 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">5</span>,<span class="dv">9</span>,<span class="dv">10</span>)</span>
-<span id="cb24-5"><a href="#cb24-5" tabindex="-1"></a>person1<span class="ot">=</span>universe2[person1]</span>
-<span id="cb24-6"><a href="#cb24-6" tabindex="-1"></a>person2<span class="ot">=</span>universe2[person2]</span>
-<span id="cb24-7"><a href="#cb24-7" tabindex="-1"></a>person3<span class="ot">=</span>universe2[person3]</span>
-<span id="cb24-8"><a href="#cb24-8" tabindex="-1"></a><span class="fu">list</span>(<span class="at">person1=</span>person3,<span class="at">person2=</span>person3,<span class="at">person3=</span>person3)</span>
-<span id="cb24-9"><a href="#cb24-9" tabindex="-1"></a><span class="co">#&gt; $person1</span></span>
-<span id="cb24-10"><a href="#cb24-10" tabindex="-1"></a><span class="co">#&gt; [1] &quot;B&quot; &quot;C&quot; &quot;E&quot; &quot;I&quot; &quot;J&quot;</span></span>
-<span id="cb24-11"><a href="#cb24-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb24-12"><a href="#cb24-12" tabindex="-1"></a><span class="co">#&gt; $person2</span></span>
-<span id="cb24-13"><a href="#cb24-13" tabindex="-1"></a><span class="co">#&gt; [1] &quot;B&quot; &quot;C&quot; &quot;E&quot; &quot;I&quot; &quot;J&quot;</span></span>
-<span id="cb24-14"><a href="#cb24-14" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb24-15"><a href="#cb24-15" tabindex="-1"></a><span class="co">#&gt; $person3</span></span>
-<span id="cb24-16"><a href="#cb24-16" tabindex="-1"></a><span class="co">#&gt; [1] &quot;B&quot; &quot;C&quot; &quot;E&quot; &quot;I&quot; &quot;J&quot;</span></span>
-<span id="cb24-17"><a href="#cb24-17" tabindex="-1"></a>friends <span class="ot">&lt;-</span> colors</span>
-<span id="cb24-18"><a href="#cb24-18" tabindex="-1"></a>friends[<span class="dv">1</span>,] <span class="ot">&lt;-</span> <span class="fu">paste</span>(person1,<span class="at">collapse=</span><span class="st">&quot;&quot;</span>)</span>
-<span id="cb24-19"><a href="#cb24-19" tabindex="-1"></a>friends[<span class="dv">2</span>,] <span class="ot">&lt;-</span> <span class="fu">paste</span>(person2,<span class="at">collapse=</span><span class="st">&quot;&quot;</span>)</span>
-<span id="cb24-20"><a href="#cb24-20" tabindex="-1"></a>friends[<span class="dv">3</span>,] <span class="ot">&lt;-</span> <span class="fu">paste</span>(person3,<span class="at">collapse=</span><span class="st">&quot;&quot;</span>)</span>
-<span id="cb24-21"><a href="#cb24-21" tabindex="-1"></a>friends</span>
-<span id="cb24-22"><a href="#cb24-22" tabindex="-1"></a><span class="co">#&gt;         [,1]   </span></span>
-<span id="cb24-23"><a href="#cb24-23" tabindex="-1"></a><span class="co">#&gt; person1 &quot;ABIJ&quot; </span></span>
-<span id="cb24-24"><a href="#cb24-24" tabindex="-1"></a><span class="co">#&gt; person2 &quot;ADFG&quot; </span></span>
-<span id="cb24-25"><a href="#cb24-25" tabindex="-1"></a><span class="co">#&gt; person3 &quot;BCEIJ&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" tabindex="-1"></a>universe2 <span class="ot">&lt;-</span>  LETTERS[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>]</span>
+<span id="cb30-2"><a href="#cb30-2" tabindex="-1"></a>person1 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">9</span>,<span class="dv">10</span>)</span>
+<span id="cb30-3"><a href="#cb30-3" tabindex="-1"></a>person2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">4</span>,<span class="dv">6</span>,<span class="dv">7</span>)</span>
+<span id="cb30-4"><a href="#cb30-4" tabindex="-1"></a>person3 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">5</span>,<span class="dv">9</span>,<span class="dv">10</span>)</span>
+<span id="cb30-5"><a href="#cb30-5" tabindex="-1"></a>person1<span class="ot">=</span>universe2[person1]</span>
+<span id="cb30-6"><a href="#cb30-6" tabindex="-1"></a>person2<span class="ot">=</span>universe2[person2]</span>
+<span id="cb30-7"><a href="#cb30-7" tabindex="-1"></a>person3<span class="ot">=</span>universe2[person3]</span>
+<span id="cb30-8"><a href="#cb30-8" tabindex="-1"></a><span class="fu">list</span>(<span class="at">person1=</span>person3,<span class="at">person2=</span>person3,<span class="at">person3=</span>person3)</span>
+<span id="cb30-9"><a href="#cb30-9" tabindex="-1"></a><span class="co">#&gt; $person1</span></span>
+<span id="cb30-10"><a href="#cb30-10" tabindex="-1"></a><span class="co">#&gt; [1] &quot;B&quot; &quot;C&quot; &quot;E&quot; &quot;I&quot; &quot;J&quot;</span></span>
+<span id="cb30-11"><a href="#cb30-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb30-12"><a href="#cb30-12" tabindex="-1"></a><span class="co">#&gt; $person2</span></span>
+<span id="cb30-13"><a href="#cb30-13" tabindex="-1"></a><span class="co">#&gt; [1] &quot;B&quot; &quot;C&quot; &quot;E&quot; &quot;I&quot; &quot;J&quot;</span></span>
+<span id="cb30-14"><a href="#cb30-14" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb30-15"><a href="#cb30-15" tabindex="-1"></a><span class="co">#&gt; $person3</span></span>
+<span id="cb30-16"><a href="#cb30-16" tabindex="-1"></a><span class="co">#&gt; [1] &quot;B&quot; &quot;C&quot; &quot;E&quot; &quot;I&quot; &quot;J&quot;</span></span>
+<span id="cb30-17"><a href="#cb30-17" tabindex="-1"></a>friends <span class="ot">&lt;-</span> colors</span>
+<span id="cb30-18"><a href="#cb30-18" tabindex="-1"></a>friends[<span class="dv">1</span>,] <span class="ot">&lt;-</span> <span class="fu">paste</span>(person1,<span class="at">collapse=</span><span class="st">&quot;&quot;</span>)</span>
+<span id="cb30-19"><a href="#cb30-19" tabindex="-1"></a>friends[<span class="dv">2</span>,] <span class="ot">&lt;-</span> <span class="fu">paste</span>(person2,<span class="at">collapse=</span><span class="st">&quot;&quot;</span>)</span>
+<span id="cb30-20"><a href="#cb30-20" tabindex="-1"></a>friends[<span class="dv">3</span>,] <span class="ot">&lt;-</span> <span class="fu">paste</span>(person3,<span class="at">collapse=</span><span class="st">&quot;&quot;</span>)</span>
+<span id="cb30-21"><a href="#cb30-21" tabindex="-1"></a>friends</span>
+<span id="cb30-22"><a href="#cb30-22" tabindex="-1"></a><span class="co">#&gt;         [,1]   </span></span>
+<span id="cb30-23"><a href="#cb30-23" tabindex="-1"></a><span class="co">#&gt; person1 &quot;ABIJ&quot; </span></span>
+<span id="cb30-24"><a href="#cb30-24" tabindex="-1"></a><span class="co">#&gt; person2 &quot;ADFG&quot; </span></span>
+<span id="cb30-25"><a href="#cb30-25" tabindex="-1"></a><span class="co">#&gt; person3 &quot;BCEIJ&quot;</span></span></code></pre></div>
 <p>So the final dataset is:</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a>set_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">colors=</span>colors,<span class="at">friends=</span>friends)</span>
-<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a>set_data</span>
-<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a><span class="co">#&gt;         colors friends</span></span>
-<span id="cb25-4"><a href="#cb25-4" tabindex="-1"></a><span class="co">#&gt; person1    gry    ABIJ</span></span>
-<span id="cb25-5"><a href="#cb25-5" tabindex="-1"></a><span class="co">#&gt; person2     by    ADFG</span></span>
-<span id="cb25-6"><a href="#cb25-6" tabindex="-1"></a><span class="co">#&gt; person3    glr   BCEIJ</span></span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" tabindex="-1"></a>set_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">colors=</span>colors,<span class="at">friends=</span>friends)</span>
+<span id="cb31-2"><a href="#cb31-2" tabindex="-1"></a>set_data</span>
+<span id="cb31-3"><a href="#cb31-3" tabindex="-1"></a><span class="co">#&gt;         colors friends</span></span>
+<span id="cb31-4"><a href="#cb31-4" tabindex="-1"></a><span class="co">#&gt; person1    gry    ABIJ</span></span>
+<span id="cb31-5"><a href="#cb31-5" tabindex="-1"></a><span class="co">#&gt; person2     by    ADFG</span></span>
+<span id="cb31-6"><a href="#cb31-6" tabindex="-1"></a><span class="co">#&gt; person3    glr   BCEIJ</span></span></code></pre></div>
 <p>And now we can compute the kernel:</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a><span class="fu">Intersect</span>(set_data,<span class="at">elements =</span> <span class="fu">c</span>(universe,universe2),<span class="at">comp=</span><span class="st">&quot;sum&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" tabindex="-1"></a><span class="fu">Intersect</span>(set_data,<span class="at">elements =</span> <span class="fu">c</span>(universe,universe2),<span class="at">comp=</span><span class="st">&quot;sum&quot;</span>)</span></code></pre></div>
 <p>(We should indicate the elements of the two universes: colors and
 friends).</p>
 <p>When <code>Intersect(...,comp = &quot;sum&quot;)</code>, all <span class="math inline">\(c_d = 1\)</span> and, in principle, all “features”
@@ -1003,9 +1100,9 @@ between 0 and 1, and there are not implicit biases.
 importance to all features. However, if you want to give more importance
 to some features over others, you can choose manually the weights that
 you want:</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a><span class="do">### We will make that &quot;friends&quot; has 3 times more importance than &quot;colors&quot;:</span></span>
-<span id="cb27-2"><a href="#cb27-2" tabindex="-1"></a>coeffs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">4</span>,<span class="dv">3</span><span class="sc">/</span><span class="dv">4</span>)</span>
-<span id="cb27-3"><a href="#cb27-3" tabindex="-1"></a><span class="fu">Intersect</span>(set_data, <span class="at">elements =</span> <span class="fu">c</span>(universe,universe2),<span class="at">comp =</span> <span class="st">&quot;weighted&quot;</span>,  <span class="at">coeff=</span>coeffs)</span></code></pre></div>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" tabindex="-1"></a><span class="do">### We will make that &quot;friends&quot; has 3 times more importance than &quot;colors&quot;:</span></span>
+<span id="cb33-2"><a href="#cb33-2" tabindex="-1"></a>coeffs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">4</span>,<span class="dv">3</span><span class="sc">/</span><span class="dv">4</span>)</span>
+<span id="cb33-3"><a href="#cb33-3" tabindex="-1"></a><span class="fu">Intersect</span>(set_data, <span class="at">elements =</span> <span class="fu">c</span>(universe,universe2),<span class="at">comp =</span> <span class="st">&quot;weighted&quot;</span>,  <span class="at">coeff=</span>coeffs)</span></code></pre></div>
 <p>Here, the result of the kernel (between 0 and 1) is the weighted
 average of the features. If you set
 <code>Intersect(..., feat_space = TRUE)</code>, the feature space
@@ -1017,7 +1114,7 @@ features).</p>
 </div>
 <div id="jaccard-kernel" class="section level3">
 <h3>Jaccard kernel</h3>
-<div id="definition-8" class="section level4">
+<div id="definition-10" class="section level4">
 <h4>Definition</h4>
 <p>The Jaccard index (or Jaccard kernel) of two sets is defined as:</p>
 <p><span class="math display">\[Jaccard(S_i,S_j)= \frac{|S_i \cap
@@ -1041,21 +1138,21 @@ average of the Jaccard kernel’s evaluations. When the coefficients are
 all set to <span class="math inline">\(\sum c_d=1\)</span>, the values
 given by the Jaccard-multi kernel range between 0 and 1.</p>
 </div>
-<div id="usage-8" class="section level4">
+<div id="usage-10" class="section level4">
 <h4>Usage</h4>
 <p>The usage is pretty similar to the Intersect kernel:</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a><span class="fu">Jaccard</span>(set_data,<span class="at">elements =</span> <span class="fu">c</span>(universe,universe2),<span class="at">comp=</span><span class="st">&quot;sum&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" tabindex="-1"></a><span class="fu">Jaccard</span>(set_data,<span class="at">elements =</span> <span class="fu">c</span>(universe,universe2),<span class="at">comp=</span><span class="st">&quot;sum&quot;</span>)</span></code></pre></div>
 <p>The only nuance here is that the univariate Jaccard kernel always is
 bounded between 0 and 1. There are not underlying biases and all
 features have the same weight (unless you explicitly do
 <code>Intersect(...,comp = &quot;weighted&quot;)</code> and enter some
 coefficients). Thus, this:</p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a><span class="fu">cosNorm</span>(<span class="fu">Jaccard</span>(set_data,<span class="at">elements =</span> <span class="fu">c</span>(universe,universe2),<span class="at">comp=</span><span class="st">&quot;sum&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" tabindex="-1"></a><span class="fu">cosNorm</span>(<span class="fu">Jaccard</span>(set_data,<span class="at">elements =</span> <span class="fu">c</span>(universe,universe2),<span class="at">comp=</span><span class="st">&quot;sum&quot;</span>))</span></code></pre></div>
 <p>or this:</p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" tabindex="-1"></a>D <span class="ot">&lt;-</span> <span class="fu">ncol</span>(set_data)</span>
-<span id="cb30-2"><a href="#cb30-2" tabindex="-1"></a><span class="fu">Jaccard</span>(set_data,<span class="at">elements =</span> <span class="fu">c</span>(universe,universe2),<span class="at">comp=</span><span class="st">&quot;sum&quot;</span>)<span class="sc">/</span>D</span></code></pre></div>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" tabindex="-1"></a>D <span class="ot">&lt;-</span> <span class="fu">ncol</span>(set_data)</span>
+<span id="cb36-2"><a href="#cb36-2" tabindex="-1"></a><span class="fu">Jaccard</span>(set_data,<span class="at">elements =</span> <span class="fu">c</span>(universe,universe2),<span class="at">comp=</span><span class="st">&quot;sum&quot;</span>)<span class="sc">/</span>D</span></code></pre></div>
 <p>Is the same than this:</p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" tabindex="-1"></a><span class="fu">Jaccard</span>(set_data,<span class="at">elements =</span> <span class="fu">c</span>(universe,universe2),<span class="at">comp=</span><span class="st">&quot;mean&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" tabindex="-1"></a><span class="fu">Jaccard</span>(set_data,<span class="at">elements =</span> <span class="fu">c</span>(universe,universe2),<span class="at">comp=</span><span class="st">&quot;mean&quot;</span>)</span></code></pre></div>
 <p>Also, take into account that the <code>Jaccard()</code> function does
 not return the data mapped onto the feature space of the kernel.</p>
 </div>
@@ -1073,7 +1170,7 @@ concept of “ranking”, which consists in assigning the ordering labels
 “1st”, “2nd”, “3rd”, … to these values.</p>
 <div id="kendalls-tau-kernel" class="section level3">
 <h3>Kendall’s <span class="math inline">\(\tau\)</span> kernel</h3>
-<div id="definition-9" class="section level4">
+<div id="definition-11" class="section level4">
 <h4>Definition</h4>
 <p>Kendall’s <span class="math inline">\(\tau\)</span> coefficient
 measures the similarity or rank correlation between to two ordinal
@@ -1098,7 +1195,7 @@ identical: the two ordinal samples/variables are equal, -1 that one
 ranking is the reverse of the other, and 0 that the two rankings are
 completely independent.</p>
 </div>
-<div id="feature-space-6" class="section level4">
+<div id="feature-space-8" class="section level4">
 <h4>Feature space</h4>
 <p>If we call <span class="math inline">\(r_i\)</span> and <span class="math inline">\(s_i\)</span> the ranks of the i-th member in the
 two ordinal samples, we can then define two matrices <strong>A</strong>
@@ -1116,58 +1213,58 @@ corresponds to a “relative order” (<span class="math inline">\(+ =  x_i
 &lt; x_j\)</span>; <span class="math inline">\(- =  x_i &gt;
 x_j\)</span>) between all pair of levels within a ranking.</p>
 </div>
-<div id="usage-9" class="section level4">
+<div id="usage-11" class="section level4">
 <h4>Usage</h4>
 <p>A <em>NxL</em> or <em>LxN</em> dataset is required. <em>N</em> is the
 sample size and <em>L</em> the number of values (levels) of the ordinal
 variable. This is an example that such a dataset:</p>
 <p><strong>Three people are given a list of 10 colors. They rank them
 from most (1) to least (10) favorite.</strong></p>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" tabindex="-1"></a>color_list <span class="ot">&lt;-</span>  <span class="fu">c</span>(<span class="st">&quot;black&quot;</span>,<span class="st">&quot;blue&quot;</span>,<span class="st">&quot;green&quot;</span>,<span class="st">&quot;grey&quot;</span>,<span class="st">&quot;lightblue&quot;</span>,<span class="st">&quot;orange&quot;</span>,<span class="st">&quot;purple&quot;</span>,</span>
-<span id="cb32-2"><a href="#cb32-2" tabindex="-1"></a><span class="st">&quot;red&quot;</span>,<span class="st">&quot;white&quot;</span>,<span class="st">&quot;yellow&quot;</span>)</span>
-<span id="cb32-3"><a href="#cb32-3" tabindex="-1"></a>survey1 <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span></span>
-<span id="cb32-4"><a href="#cb32-4" tabindex="-1"></a>survey2 <span class="ot">&lt;-</span> <span class="dv">10</span><span class="sc">:</span><span class="dv">1</span></span>
-<span id="cb32-5"><a href="#cb32-5" tabindex="-1"></a>survey3 <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">10</span>)</span>
-<span id="cb32-6"><a href="#cb32-6" tabindex="-1"></a>color <span class="ot">&lt;-</span> <span class="fu">cbind</span>(survey1,survey2,survey3) <span class="co"># Samples in columns</span></span>
-<span id="cb32-7"><a href="#cb32-7" tabindex="-1"></a><span class="fu">rownames</span>(color) <span class="ot">&lt;-</span> color_list</span>
-<span id="cb32-8"><a href="#cb32-8" tabindex="-1"></a>color</span>
-<span id="cb32-9"><a href="#cb32-9" tabindex="-1"></a><span class="co">#&gt;           survey1 survey2 survey3</span></span>
-<span id="cb32-10"><a href="#cb32-10" tabindex="-1"></a><span class="co">#&gt; black           1      10      10</span></span>
-<span id="cb32-11"><a href="#cb32-11" tabindex="-1"></a><span class="co">#&gt; blue            2       9       7</span></span>
-<span id="cb32-12"><a href="#cb32-12" tabindex="-1"></a><span class="co">#&gt; green           3       8       5</span></span>
-<span id="cb32-13"><a href="#cb32-13" tabindex="-1"></a><span class="co">#&gt; grey            4       7       4</span></span>
-<span id="cb32-14"><a href="#cb32-14" tabindex="-1"></a><span class="co">#&gt; lightblue       5       6       1</span></span>
-<span id="cb32-15"><a href="#cb32-15" tabindex="-1"></a><span class="co">#&gt; orange          6       5       3</span></span>
-<span id="cb32-16"><a href="#cb32-16" tabindex="-1"></a><span class="co">#&gt; purple          7       4       2</span></span>
-<span id="cb32-17"><a href="#cb32-17" tabindex="-1"></a><span class="co">#&gt; red             8       3       9</span></span>
-<span id="cb32-18"><a href="#cb32-18" tabindex="-1"></a><span class="co">#&gt; white           9       2       8</span></span>
-<span id="cb32-19"><a href="#cb32-19" tabindex="-1"></a><span class="co">#&gt; yellow         10       1       6</span></span></code></pre></div>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" tabindex="-1"></a>color_list <span class="ot">&lt;-</span>  <span class="fu">c</span>(<span class="st">&quot;black&quot;</span>,<span class="st">&quot;blue&quot;</span>,<span class="st">&quot;green&quot;</span>,<span class="st">&quot;grey&quot;</span>,<span class="st">&quot;lightblue&quot;</span>,<span class="st">&quot;orange&quot;</span>,<span class="st">&quot;purple&quot;</span>,</span>
+<span id="cb38-2"><a href="#cb38-2" tabindex="-1"></a><span class="st">&quot;red&quot;</span>,<span class="st">&quot;white&quot;</span>,<span class="st">&quot;yellow&quot;</span>)</span>
+<span id="cb38-3"><a href="#cb38-3" tabindex="-1"></a>survey1 <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span></span>
+<span id="cb38-4"><a href="#cb38-4" tabindex="-1"></a>survey2 <span class="ot">&lt;-</span> <span class="dv">10</span><span class="sc">:</span><span class="dv">1</span></span>
+<span id="cb38-5"><a href="#cb38-5" tabindex="-1"></a>survey3 <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">10</span>)</span>
+<span id="cb38-6"><a href="#cb38-6" tabindex="-1"></a>color <span class="ot">&lt;-</span> <span class="fu">cbind</span>(survey1,survey2,survey3) <span class="co"># Samples in columns</span></span>
+<span id="cb38-7"><a href="#cb38-7" tabindex="-1"></a><span class="fu">rownames</span>(color) <span class="ot">&lt;-</span> color_list</span>
+<span id="cb38-8"><a href="#cb38-8" tabindex="-1"></a>color</span>
+<span id="cb38-9"><a href="#cb38-9" tabindex="-1"></a><span class="co">#&gt;           survey1 survey2 survey3</span></span>
+<span id="cb38-10"><a href="#cb38-10" tabindex="-1"></a><span class="co">#&gt; black           1      10       5</span></span>
+<span id="cb38-11"><a href="#cb38-11" tabindex="-1"></a><span class="co">#&gt; blue            2       9       1</span></span>
+<span id="cb38-12"><a href="#cb38-12" tabindex="-1"></a><span class="co">#&gt; green           3       8      10</span></span>
+<span id="cb38-13"><a href="#cb38-13" tabindex="-1"></a><span class="co">#&gt; grey            4       7       7</span></span>
+<span id="cb38-14"><a href="#cb38-14" tabindex="-1"></a><span class="co">#&gt; lightblue       5       6       2</span></span>
+<span id="cb38-15"><a href="#cb38-15" tabindex="-1"></a><span class="co">#&gt; orange          6       5       4</span></span>
+<span id="cb38-16"><a href="#cb38-16" tabindex="-1"></a><span class="co">#&gt; purple          7       4       8</span></span>
+<span id="cb38-17"><a href="#cb38-17" tabindex="-1"></a><span class="co">#&gt; red             8       3       9</span></span>
+<span id="cb38-18"><a href="#cb38-18" tabindex="-1"></a><span class="co">#&gt; white           9       2       6</span></span>
+<span id="cb38-19"><a href="#cb38-19" tabindex="-1"></a><span class="co">#&gt; yellow         10       1       3</span></span></code></pre></div>
 <p>In this case, the ranking is already done. The Kendall’s <span class="math inline">\(\tau\)</span> kernel is computed like:</p>
-<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" tabindex="-1"></a><span class="fu">Kendall</span>(color)</span></code></pre></div>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" tabindex="-1"></a><span class="fu">Kendall</span>(color)</span></code></pre></div>
 <p>(If we prefer samples in rows, we can do:)</p>
-<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" tabindex="-1"></a>color <span class="ot">&lt;-</span> <span class="fu">t</span>(color)</span>
-<span id="cb34-2"><a href="#cb34-2" tabindex="-1"></a><span class="fu">Kendall</span>(color,<span class="at">samples.in.rows=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" tabindex="-1"></a>color <span class="ot">&lt;-</span> <span class="fu">t</span>(color)</span>
+<span id="cb40-2"><a href="#cb40-2" tabindex="-1"></a><span class="fu">Kendall</span>(color,<span class="at">samples.in.rows=</span><span class="cn">TRUE</span>)</span></code></pre></div>
 <p>Alternatively, the ranking may be not given explicitly by the user.
 Consider this other dataset:</p>
 <p><strong>The same three people are asked the number of times they ate
 5 different kinds of food during the last month</strong></p>
-<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" tabindex="-1"></a>food <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">1</span>,<span class="dv">18</span>, <span class="dv">25</span>,<span class="dv">30</span>, <span class="dv">7</span>, <span class="dv">5</span>,<span class="dv">20</span>, <span class="dv">5</span>, <span class="dv">12</span>, <span class="dv">7</span>,<span class="dv">20</span>, <span class="dv">20</span>, <span class="dv">3</span>,<span class="dv">22</span>),<span class="at">ncol=</span><span class="dv">3</span>,<span class="at">nrow=</span><span class="dv">5</span>,<span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb35-2"><a href="#cb35-2" tabindex="-1"></a><span class="fu">colnames</span>(food) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(color)</span>
-<span id="cb35-3"><a href="#cb35-3" tabindex="-1"></a><span class="fu">rownames</span>(food) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;spinach&quot;</span>, <span class="st">&quot;chicken&quot;</span>, <span class="st">&quot;beef&quot;</span> , <span class="st">&quot;salad&quot;</span>,<span class="st">&quot;lentils&quot;</span>)</span>
-<span id="cb35-4"><a href="#cb35-4" tabindex="-1"></a>food</span>
-<span id="cb35-5"><a href="#cb35-5" tabindex="-1"></a><span class="co">#&gt;         survey1 survey2 survey3</span></span>
-<span id="cb35-6"><a href="#cb35-6" tabindex="-1"></a><span class="co">#&gt; spinach      10       1      18</span></span>
-<span id="cb35-7"><a href="#cb35-7" tabindex="-1"></a><span class="co">#&gt; chicken      25      30       7</span></span>
-<span id="cb35-8"><a href="#cb35-8" tabindex="-1"></a><span class="co">#&gt; beef          5      20       5</span></span>
-<span id="cb35-9"><a href="#cb35-9" tabindex="-1"></a><span class="co">#&gt; salad        12       7      20</span></span>
-<span id="cb35-10"><a href="#cb35-10" tabindex="-1"></a><span class="co">#&gt; lentils      20       3      22</span></span></code></pre></div>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" tabindex="-1"></a>food <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">1</span>,<span class="dv">18</span>, <span class="dv">25</span>,<span class="dv">30</span>, <span class="dv">7</span>, <span class="dv">5</span>,<span class="dv">20</span>, <span class="dv">5</span>, <span class="dv">12</span>, <span class="dv">7</span>,<span class="dv">20</span>, <span class="dv">20</span>, <span class="dv">3</span>,<span class="dv">22</span>),<span class="at">ncol=</span><span class="dv">3</span>,<span class="at">nrow=</span><span class="dv">5</span>,<span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb41-2"><a href="#cb41-2" tabindex="-1"></a><span class="fu">colnames</span>(food) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(color)</span>
+<span id="cb41-3"><a href="#cb41-3" tabindex="-1"></a><span class="fu">rownames</span>(food) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;spinach&quot;</span>, <span class="st">&quot;chicken&quot;</span>, <span class="st">&quot;beef&quot;</span> , <span class="st">&quot;salad&quot;</span>,<span class="st">&quot;lentils&quot;</span>)</span>
+<span id="cb41-4"><a href="#cb41-4" tabindex="-1"></a>food</span>
+<span id="cb41-5"><a href="#cb41-5" tabindex="-1"></a><span class="co">#&gt;         survey1 survey2 survey3</span></span>
+<span id="cb41-6"><a href="#cb41-6" tabindex="-1"></a><span class="co">#&gt; spinach      10       1      18</span></span>
+<span id="cb41-7"><a href="#cb41-7" tabindex="-1"></a><span class="co">#&gt; chicken      25      30       7</span></span>
+<span id="cb41-8"><a href="#cb41-8" tabindex="-1"></a><span class="co">#&gt; beef          5      20       5</span></span>
+<span id="cb41-9"><a href="#cb41-9" tabindex="-1"></a><span class="co">#&gt; salad        12       7      20</span></span>
+<span id="cb41-10"><a href="#cb41-10" tabindex="-1"></a><span class="co">#&gt; lentils      20       3      22</span></span></code></pre></div>
 <p>In that case, the ranking is done internally before computing the
 Kendall’s <span class="math inline">\(\tau\)</span>.</p>
-<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" tabindex="-1"></a><span class="fu">Kendall</span>(food)</span></code></pre></div>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" tabindex="-1"></a><span class="fu">Kendall</span>(food)</span></code></pre></div>
 <p>Furthermore, we can combine these two datasets, because the
 participants are the same:</p>
-<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" tabindex="-1"></a>ordinal_data <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">color=</span>color,<span class="at">food=</span>food) <span class="co">#All samples in columns</span></span>
-<span id="cb37-2"><a href="#cb37-2" tabindex="-1"></a><span class="fu">Kendall</span>(ordinal_data)</span></code></pre></div>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" tabindex="-1"></a>ordinal_data <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">color=</span>color,<span class="at">food=</span>food) <span class="co">#All samples in columns</span></span>
+<span id="cb43-2"><a href="#cb43-2" tabindex="-1"></a><span class="fu">Kendall</span>(ordinal_data)</span></code></pre></div>
 <p>By default, the Kendall’s <span class="math inline">\(\tau\)</span>
 kernel values of the two datasets are averaged. The alternative is to
 sum them, doing: <code>Kendall(...,comp=&quot;sum&quot;)</code>.</p>
@@ -1176,20 +1273,20 @@ onto the feature space.</p>
 </div>
 </div>
 </div>
-<div id="kernels-for-strings-sequences-or-text" class="section level2">
-<h2>Kernels for strings, sequences, or text</h2>
+<div id="kernels-for-strings-sequences-or-short-texts" class="section level2">
+<h2>Kernels for strings, sequences, or (short) texts</h2>
 <p>Strings or sequences are vectors of objects (usually represented as
 characters) in which repetitions are allowed and order matters. These
 characters are drawn from a given alphabet <span class="math inline">\(A\)</span>. An example of an alphabet is:</p>
-<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" tabindex="-1"></a>LETTERS</span>
-<span id="cb38-2"><a href="#cb38-2" tabindex="-1"></a><span class="co">#&gt;  [1] &quot;A&quot; &quot;B&quot; &quot;C&quot; &quot;D&quot; &quot;E&quot; &quot;F&quot; &quot;G&quot; &quot;H&quot; &quot;I&quot; &quot;J&quot; &quot;K&quot; &quot;L&quot; &quot;M&quot; &quot;N&quot; &quot;O&quot; &quot;P&quot; &quot;Q&quot; &quot;R&quot; &quot;S&quot;</span></span>
-<span id="cb38-3"><a href="#cb38-3" tabindex="-1"></a><span class="co">#&gt; [20] &quot;T&quot; &quot;U&quot; &quot;V&quot; &quot;W&quot; &quot;X&quot; &quot;Y&quot; &quot;Z&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" tabindex="-1"></a>LETTERS</span>
+<span id="cb44-2"><a href="#cb44-2" tabindex="-1"></a><span class="co">#&gt;  [1] &quot;A&quot; &quot;B&quot; &quot;C&quot; &quot;D&quot; &quot;E&quot; &quot;F&quot; &quot;G&quot; &quot;H&quot; &quot;I&quot; &quot;J&quot; &quot;K&quot; &quot;L&quot; &quot;M&quot; &quot;N&quot; &quot;O&quot; &quot;P&quot; &quot;Q&quot; &quot;R&quot; &quot;S&quot;</span></span>
+<span id="cb44-3"><a href="#cb44-3" tabindex="-1"></a><span class="co">#&gt; [20] &quot;T&quot; &quot;U&quot; &quot;V&quot; &quot;W&quot; &quot;X&quot; &quot;Y&quot; &quot;Z&quot;</span></span></code></pre></div>
 <p>We denote the size of an alphabet as <span class="math inline">\(|A|\)</span>. In the example above, this is:</p>
-<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" tabindex="-1"></a><span class="fu">length</span>(LETTERS)</span>
-<span id="cb39-2"><a href="#cb39-2" tabindex="-1"></a><span class="co">#&gt; [1] 26</span></span></code></pre></div>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" tabindex="-1"></a><span class="fu">length</span>(LETTERS)</span>
+<span id="cb45-2"><a href="#cb45-2" tabindex="-1"></a><span class="co">#&gt; [1] 26</span></span></code></pre></div>
 <div id="spectrum-kernel" class="section level3">
 <h3>Spectrum kernel</h3>
-<div id="feature-space-7" class="section level4">
+<div id="feature-space-9" class="section level4">
 <h4>Feature space</h4>
 <p>Let <span class="math inline">\(x\)</span> be a string or sequence,
 and <span class="math inline">\(s\)</span> a substring of length
@@ -1197,7 +1294,7 @@ and <span class="math inline">\(s\)</span> a substring of length
 substrings of length <em>L</em> generated from <span class="math inline">\(A\)</span>. Each <span class="math inline">\(t_s\)</span> is a feature in feature space, which
 has dimension <span class="math inline">\(|A|^L\)</span>.</p>
 </div>
-<div id="definition-10" class="section level4">
+<div id="definition-12" class="section level4">
 <h4>Definition</h4>
 <p>The Spectrum kernel is the dot product of two strings mapped onto the
 feature space we have just defined. Alternatively, it can also be
@@ -1215,30 +1312,30 @@ Spectrum kernel so the result is bounded between 0 and 1:</p>
 A result of 0 means complete dissimilarity, 1 means complete similarity,
 and the strings’ length is not taken into account.</p>
 </div>
-<div id="usage-10" class="section level4">
+<div id="usage-12" class="section level4">
 <h4>Usage</h4>
 <p>You need a dataset containing <em>N</em> strings or text data. For
 instance:</p>
-<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" tabindex="-1"></a>alphabet <span class="ot">&lt;-</span> <span class="fu">c</span>(letters,<span class="st">&quot;_&quot;</span>)</span>
-<span id="cb40-2"><a href="#cb40-2" tabindex="-1"></a>strings <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;hello_world&quot;</span>,<span class="st">&quot;hello_word&quot;</span>,<span class="st">&quot;hola_mon&quot;</span>,<span class="st">&quot;kaixo_mundua&quot;</span>,</span>
-<span id="cb40-3"><a href="#cb40-3" tabindex="-1"></a><span class="st">&quot;saluton_mondo&quot;</span>,<span class="st">&quot;ola_mundo&quot;</span>, <span class="st">&quot;bonjour_le_monde&quot;</span>)</span>
-<span id="cb40-4"><a href="#cb40-4" tabindex="-1"></a><span class="fu">names</span>(strings) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;english1&quot;</span>,<span class="st">&quot;english_typo&quot;</span>,<span class="st">&quot;catalan&quot;</span>,<span class="st">&quot;basque&quot;</span>,</span>
-<span id="cb40-5"><a href="#cb40-5" tabindex="-1"></a><span class="st">&quot;esperanto&quot;</span>,<span class="st">&quot;galician&quot;</span>,<span class="st">&quot;french&quot;</span>)</span>
-<span id="cb40-6"><a href="#cb40-6" tabindex="-1"></a>strings</span>
-<span id="cb40-7"><a href="#cb40-7" tabindex="-1"></a><span class="co">#&gt;           english1       english_typo            catalan             basque </span></span>
-<span id="cb40-8"><a href="#cb40-8" tabindex="-1"></a><span class="co">#&gt;      &quot;hello_world&quot;       &quot;hello_word&quot;         &quot;hola_mon&quot;     &quot;kaixo_mundua&quot; </span></span>
-<span id="cb40-9"><a href="#cb40-9" tabindex="-1"></a><span class="co">#&gt;          esperanto           galician             french </span></span>
-<span id="cb40-10"><a href="#cb40-10" tabindex="-1"></a><span class="co">#&gt;    &quot;saluton_mondo&quot;        &quot;ola_mundo&quot; &quot;bonjour_le_monde&quot;</span></span>
-<span id="cb40-11"><a href="#cb40-11" tabindex="-1"></a>alphabet</span>
-<span id="cb40-12"><a href="#cb40-12" tabindex="-1"></a><span class="co">#&gt;  [1] &quot;a&quot; &quot;b&quot; &quot;c&quot; &quot;d&quot; &quot;e&quot; &quot;f&quot; &quot;g&quot; &quot;h&quot; &quot;i&quot; &quot;j&quot; &quot;k&quot; &quot;l&quot; &quot;m&quot; &quot;n&quot; &quot;o&quot; &quot;p&quot; &quot;q&quot; &quot;r&quot; &quot;s&quot;</span></span>
-<span id="cb40-13"><a href="#cb40-13" tabindex="-1"></a><span class="co">#&gt; [20] &quot;t&quot; &quot;u&quot; &quot;v&quot; &quot;w&quot; &quot;x&quot; &quot;y&quot; &quot;z&quot; &quot;_&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" tabindex="-1"></a>alphabet <span class="ot">&lt;-</span> <span class="fu">c</span>(letters,<span class="st">&quot;_&quot;</span>)</span>
+<span id="cb46-2"><a href="#cb46-2" tabindex="-1"></a>strings <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;hello_world&quot;</span>,<span class="st">&quot;hello_word&quot;</span>,<span class="st">&quot;hola_mon&quot;</span>,<span class="st">&quot;kaixo_mundua&quot;</span>,</span>
+<span id="cb46-3"><a href="#cb46-3" tabindex="-1"></a><span class="st">&quot;saluton_mondo&quot;</span>,<span class="st">&quot;ola_mundo&quot;</span>, <span class="st">&quot;bonjour_le_monde&quot;</span>)</span>
+<span id="cb46-4"><a href="#cb46-4" tabindex="-1"></a><span class="fu">names</span>(strings) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;english1&quot;</span>,<span class="st">&quot;english_typo&quot;</span>,<span class="st">&quot;catalan&quot;</span>,<span class="st">&quot;basque&quot;</span>,</span>
+<span id="cb46-5"><a href="#cb46-5" tabindex="-1"></a><span class="st">&quot;esperanto&quot;</span>,<span class="st">&quot;galician&quot;</span>,<span class="st">&quot;french&quot;</span>)</span>
+<span id="cb46-6"><a href="#cb46-6" tabindex="-1"></a>strings</span>
+<span id="cb46-7"><a href="#cb46-7" tabindex="-1"></a><span class="co">#&gt;           english1       english_typo            catalan             basque </span></span>
+<span id="cb46-8"><a href="#cb46-8" tabindex="-1"></a><span class="co">#&gt;      &quot;hello_world&quot;       &quot;hello_word&quot;         &quot;hola_mon&quot;     &quot;kaixo_mundua&quot; </span></span>
+<span id="cb46-9"><a href="#cb46-9" tabindex="-1"></a><span class="co">#&gt;          esperanto           galician             french </span></span>
+<span id="cb46-10"><a href="#cb46-10" tabindex="-1"></a><span class="co">#&gt;    &quot;saluton_mondo&quot;        &quot;ola_mundo&quot; &quot;bonjour_le_monde&quot;</span></span>
+<span id="cb46-11"><a href="#cb46-11" tabindex="-1"></a>alphabet</span>
+<span id="cb46-12"><a href="#cb46-12" tabindex="-1"></a><span class="co">#&gt;  [1] &quot;a&quot; &quot;b&quot; &quot;c&quot; &quot;d&quot; &quot;e&quot; &quot;f&quot; &quot;g&quot; &quot;h&quot; &quot;i&quot; &quot;j&quot; &quot;k&quot; &quot;l&quot; &quot;m&quot; &quot;n&quot; &quot;o&quot; &quot;p&quot; &quot;q&quot; &quot;r&quot; &quot;s&quot;</span></span>
+<span id="cb46-13"><a href="#cb46-13" tabindex="-1"></a><span class="co">#&gt; [20] &quot;t&quot; &quot;u&quot; &quot;v&quot; &quot;w&quot; &quot;x&quot; &quot;y&quot; &quot;z&quot; &quot;_&quot;</span></span></code></pre></div>
 <p>Then you can compute the Spectrum kernel. For instance, we could
 consider substrings of length L = 2:</p>
-<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" tabindex="-1"></a><span class="fu">Spectrum</span>(strings,<span class="at">l=</span><span class="dv">2</span>,<span class="at">alphabet=</span>alphabet)</span></code></pre></div>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" tabindex="-1"></a><span class="fu">Spectrum</span>(strings,<span class="at">l=</span><span class="dv">2</span>,<span class="at">alphabet=</span>alphabet)</span></code></pre></div>
 <p>The feature space can be recovered doing:</p>
-<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" tabindex="-1"></a><span class="fu">Spectrum</span>(strings,<span class="at">l=</span><span class="dv">2</span>,<span class="at">alphabet=</span>alphabet, <span class="at">feat_space =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" tabindex="-1"></a><span class="fu">Spectrum</span>(strings,<span class="at">l=</span><span class="dv">2</span>,<span class="at">alphabet=</span>alphabet, <span class="at">feat_space =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <p>The cosine-normalized version can be computed typing:</p>
-<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" tabindex="-1"></a><span class="fu">Spectrum</span>(strings,<span class="at">l=</span><span class="dv">2</span>,<span class="at">alphabet=</span>alphabet,<span class="at">cos.norm =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" tabindex="-1"></a><span class="fu">Spectrum</span>(strings,<span class="at">l=</span><span class="dv">2</span>,<span class="at">alphabet=</span>alphabet,<span class="at">cos.norm =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <p>(if you set <code>feat_space=TRUE</code>, the feature space returned
 by <code>Spectrum()</code> will be scaled accordingly).</p>
 <p>Right now, the Spectrum kernel implemented by <code>kerntools</code>
@@ -1248,6 +1345,61 @@ packages that you may use. For instance, you may refer to
 <code>kernlab::stringdot()</code>, or check the <code>kebabs</code>
 package, which covers complex kernels for strings like the motif kernel,
 the mismatch kernel, the gappy pair kernel, etc.</p>
+</div>
+</div>
+</div>
+<div id="kernels-for-bag-of-words-bow-or-bags-of-visual-words-data" class="section level2">
+<h2>Kernels for bag-of-words (BoW) or bags-of-visual-words data</h2>
+<p>Given a document, we define a “bag” as the unordered collection of
+the words it contains. A bag-of-words model counts the occurrence of
+each word, disregarding word order. Thus, these datasets typically
+consist of nonnegative <em>NxD</em> tables, where <em>D</em> is the
+total number of different words present in all documents, and <em>N</em>
+is the number of documents.</p>
+<div id="chi2-kernel" class="section level3">
+<h3><span class="math inline">\(\chi^2\)</span> kernel</h3>
+<div id="definition-13" class="section level4">
+<h4>Definition</h4>
+<p>The <span class="math inline">\(\chi^2\)</span> kernel is defined
+as:</p>
+<p><span class="math display">\[\chi^2(x_i,x_j) = e^{-\gamma {
+\sum_d\frac{{(x_id-x_jd)}^2}{x_id+x_jd}}}\]</span></p>
+<p>This definition is akin to the RBF kernel, as the <span class="math inline">\(\chi^2\)</span> kernel is also the negative
+exponential of a distance. As in the former, the output ranges between 0
+and 1: the higher the kernel value, the higher the similarity between
+<span class="math inline">\(\mathbf{x_i},\mathbf{x_j}\)</span>. <span class="math inline">\(\gamma&gt;0\)</span> is a hyperparameter that
+governs the “smoothness” of this kernel when adapting to data.</p>
+</div>
+<div id="usage-13" class="section level4">
+<h4>Usage</h4>
+<p>You need a BoW dataset. For instance, consider the following two
+documents:</p>
+<ul>
+<li><p>“John likes to watch movies. Mary likes movies too.”</p></li>
+<li><p>“Mary also likes to watch football games.”</p></li>
+</ul>
+<p>If we count the words present in these two documents, we obtain the
+following dataset:</p>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" tabindex="-1"></a>words <span class="ot">&lt;-</span>  <span class="fu">c</span>(<span class="st">&quot;John&quot;</span>,<span class="st">&quot;likes&quot;</span>,<span class="st">&quot;to&quot;</span>,<span class="st">&quot;watch&quot;</span>,<span class="st">&quot;movies&quot;</span>,<span class="st">&quot;Mary&quot;</span>,<span class="st">&quot;too&quot;</span>,<span class="st">&quot;also&quot;</span>,<span class="st">&quot;football&quot;</span>,<span class="st">&quot;games&quot;</span>)</span>
+<span id="cb50-2"><a href="#cb50-2" tabindex="-1"></a>documents <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>),<span class="at">nrow=</span><span class="dv">2</span>,<span class="at">ncol=</span><span class="fu">length</span>(words),<span class="at">byrow=</span><span class="cn">TRUE</span>)</span>
+<span id="cb50-3"><a href="#cb50-3" tabindex="-1"></a><span class="fu">colnames</span>(documents) <span class="ot">&lt;-</span> words</span>
+<span id="cb50-4"><a href="#cb50-4" tabindex="-1"></a><span class="fu">rownames</span>(documents) <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span></span>
+<span id="cb50-5"><a href="#cb50-5" tabindex="-1"></a>documents</span>
+<span id="cb50-6"><a href="#cb50-6" tabindex="-1"></a><span class="co">#&gt;   John likes to watch movies Mary too also football games</span></span>
+<span id="cb50-7"><a href="#cb50-7" tabindex="-1"></a><span class="co">#&gt; 1    1     2  1     1      2    1   1    0        0     0</span></span>
+<span id="cb50-8"><a href="#cb50-8" tabindex="-1"></a><span class="co">#&gt; 2    0     1  1     1      0    1   0    1        1     1</span></span></code></pre></div>
+<p>Now, to compute the <span class="math inline">\(\chi^2\)</span>
+kernel, we can type:</p>
+<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" tabindex="-1"></a><span class="fu">Chi2</span>(documents,<span class="at">g=</span><span class="fl">0.1</span>)</span>
+<span id="cb51-2"><a href="#cb51-2" tabindex="-1"></a><span class="co">#&gt;           1         2</span></span>
+<span id="cb51-3"><a href="#cb51-3" tabindex="-1"></a><span class="co">#&gt; 1 1.0000000 0.4803053</span></span>
+<span id="cb51-4"><a href="#cb51-4" tabindex="-1"></a><span class="co">#&gt; 2 0.4803053 1.0000000</span></span></code></pre></div>
+<p><code>Chi2(...,g)</code> should be chosen by the user. With <span class="math inline">\(\gamma=0.1\)</span>, the similarity between
+documents 1 and 2 is almost 0.50. If <code>Chi2(...,g=NULL)</code>, we
+obtain instead the LeCam distance (see <a href="https://threeplusone.com/pubs/on_information.pdf">On Measures of
+Entropy and Information</a>.</p>
+<p>Finally, <code>kerntools</code>’s does not compute the feature space
+of the <span class="math inline">\(\chi^2\)</span> kernel.</p>
 </div>
 </div>
 </div>

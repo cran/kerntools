@@ -1,7 +1,7 @@
 Package: kerntools
 Type: Package
 Title: Kernel Functions and Tools for Machine Learning Applications
-Version: 1.1.0
+Version: 1.2.0
 Authors@R: person("Elies", "Ramon", email = "eramon@everlyrusher.com",
     role = c("aut","cre","cph"),  comment = c(ORCID = "0000-0002-7953-8115"))
 Description: Kernel functions for diverse types of data (including, but not
@@ -24,8 +24,8 @@ URL: https://github.com/elies-ramon/kerntools,
         https://elies-ramon.github.io/kerntools/
 BugReports: https://github.com/elies-ramon/kerntools/issues
 NeedsCompilation: no
-Packaged: 2024-10-25 08:49:19 UTC; syko
+Packaged: 2025-02-19 14:52:02 UTC; syko
 Author: Elies Ramon [aut, cre, cph] (<https://orcid.org/0000-0002-7953-8115>)
 Maintainer: Elies Ramon <eramon@everlyrusher.com>
 Repository: CRAN
-Date/Publication: 2024-10-25 09:00:02 UTC
+Date/Publication: 2025-02-19 15:10:02 UTC

@@ -49,6 +49,29 @@ library(kerntools)
 #  data <- soil$abund
 #  Ruzicka(data)
 
+## ----eval=FALSE---------------------------------------------------------------
+#  ### Our example dataset contains the bacterial abundance of *D* species in *N* soil samples.
+#  data <- soil$abund
+#  cLinear(data)
+#  
+
+## ----eval=FALSE---------------------------------------------------------------
+#  cLinear(soil$abund,zeros = "pseudo")
+
+## ----eval=FALSE---------------------------------------------------------------
+#  cLinear(soil$abund,zeros = "pseudo",feat_space=TRUE)
+
+## ----eval=FALSE---------------------------------------------------------------
+#  cLinear(soil$abund,zeros = "pseudo", cos.norm = TRUE)
+
+## ----eval=FALSE---------------------------------------------------------------
+#  ### Our example dataset contains the bacterial abundance of *D* species in *N* soil samples.
+#  Aitchison(soil$abund,g=0.1)
+
+## ----eval=FALSE---------------------------------------------------------------
+#  ### Our example dataset contains the bacterial abundance of *D* species in *N* soil samples.
+#  Aitchison(soil$abund,zeros = "pseudo", g=0.1))
+
 ## -----------------------------------------------------------------------------
 cat_feat <- data.frame(var=factor(sample(LETTERS[1:3],10,replace = TRUE)))
 rownames(cat_feat) <- 1:10
@@ -198,4 +221,14 @@ alphabet
 
 ## ----eval=FALSE---------------------------------------------------------------
 #  Spectrum(strings,l=2,alphabet=alphabet,cos.norm = TRUE)
+
+## -----------------------------------------------------------------------------
+words <-  c("John","likes","to","watch","movies","Mary","too","also","football","games")
+documents <- matrix(c(1,2,1,1,2,1,1,0,0,0,0,1,1,1,0,1,0,1,1,1),nrow=2,ncol=length(words),byrow=TRUE)
+colnames(documents) <- words
+rownames(documents) <- 1:2
+documents
+
+## -----------------------------------------------------------------------------
+Chi2(documents,g=0.1)
 

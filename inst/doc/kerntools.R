@@ -161,6 +161,20 @@ features <- union(pc1$first_features,pc2$first_features)
 kPCA_arrows(plot=dirac_kpca$plot,contributions=t(pcs$loadings[1:2,features]),colour="grey15")
 
 ## -----------------------------------------------------------------------------
+dirac_model <- kernlab::ksvm(x=KD$K, y= factor(showdata$Liked.new.show), kernel="matrix",C=0.1)
+
+## -----------------------------------------------------------------------------
+sv_index <- unlist(kernlab::alphaindex(dirac_model)) # Vector with the SV indices
+sv_coef <- unlist(kernlab::coef(dirac_model)) # Vector with the SV coefficients
+feat_imp <- svm_imp(X=KD$feat_space,svindx=sv_index,coeff=sv_coef,result="raw")
+plotImp(feat_imp,leftmargin=15,nfeat=10,absolute = FALSE,  relative = FALSE,
+        col ="steelblue3",main="Features associated to liking the show")
+
+## -----------------------------------------------------------------------------
+abs_feat_imp <- as.matrix(abs(feat_imp)) ## We take the absolute importances
+aggregate_imp(X=abs_feat_imp,lev=colnames(showdata)[-5],samples="cols")
+
+## -----------------------------------------------------------------------------
 KL1 <- Linear(cosnormX(iris[,1:4])) # important: by row
 KL2 <- cosNorm(Linear(iris[,1:4])) # a third valid option is: Linear(iris[,1:4], cos.norm=TRUE)
 simK(list(KL1=KL1,KL2=KL2))
