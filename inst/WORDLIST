@@ -96,6 +96,7 @@ al
 approximator
 bayesian
 binom
+bioRxiv
 cLinear
 ces
 circ
@@ -109,6 +110,7 @@ customizable
 diagonalizable
 dmax
 doi
+dplyr
 eigendecomposed
 eigendecomposition
 et
@@ -120,6 +122,7 @@ ggplot
 grey
 heatK
 histK
+https
 ij
 importances
 instace
@@ -165,6 +168,7 @@ preprocessed
 princomp
 priori
 procrustes
+protease
 pseudocount
 recode
 recoded

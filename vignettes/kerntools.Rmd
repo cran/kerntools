@@ -211,7 +211,7 @@ Krbf2 <- RBF(iris_std,g=0.1667)
 histK(Krbf2,col="darkseagreen1",vn=TRUE)
 ```
 
-Not only the histogram changes: the von Neumann entropy changes as well. It important to remark that the RBF kernel is very sensitive to the gamma values. The higher entropy with respect to that of the linear kernel reflects that, here, we have a higher variability in the kernel matrix values. (That can be also be deduced comparing both histograms. Conversely, if we do `heatK(Krbf)`, we will observe more extreme values/colors than before). [This paper](https://www.mdpi.com/1099-4300/25/1/154) recommends an entropy between 0.3-0.5, so maybe this will be reflected on the SVM model's performance? 
+Not only the histogram changes: the von Neumann entropy changes as well. It important to remark that the RBF kernel is very sensitive to the gamma values. The higher entropy with respect to that of the linear kernel reflects that, here, we have a higher variability in the kernel matrix values. (That can be also be deduced comparing both histograms. Conversely, if we do `heatK(Krbf)`, we will observe more extreme values/colors than before). [This paper](https://pmc.ncbi.nlm.nih.gov/articles/PMC9858626/) recommends an entropy between 0.3-0.5, so maybe this will be reflected on the SVM model's performance? 
 
 Now, we can also do a kernel PCA. Our previous kernel PCA used a linear kernel so, in reality, it was identical to a "normal" PCA. This time however we are using a different kernel and now we can actually say that this is a kernel PCA. The main difference is that the projection of samples is *not* going to be linear. Sometimes, this creates strange patterns that are difficult to interpret. 
 

@@ -4,10 +4,11 @@
 # kerntools
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
-The goal of kerntools is to provide R tools for working with a family of
-Machine Learning methods called kernel methods. It can be used to
+The goal of `kerntools` is to provide R tools for working with a family
+of Machine Learning methods called kernel methods. It can be used to
 complement other R packages like `kernlab`. Right now, `kerntools`
 implements several kernel functions for treating non-negative and real
 vectors, real matrices, categorical and ordinal variables, sets, and
@@ -19,6 +20,13 @@ importance of Support Vector Machines (SVMs) models, and display
 customizable kernel Principal Components Analysis (PCA) plots. For
 convenience, widespread performance measures and feature importance
 barplots are available for the user.
+
+If you want to see a real-life application of `kerntools`, you can check
+the following paper:
+
+- Ramon, Elies. *Unraveling HIV protease drug resistance and genetic
+  diversity with kernel methods.* bioRxiv 2025.03.26.644092; doi:
+  [https://doi.org/10.1101/2025.03.26.644092](https://www.biorxiv.org/content/10.1101/2025.03.26.644092v1).
 
 ## Installation
 
@@ -81,7 +89,7 @@ dirac_kpca <- kPCA(KD,plot=c(1,2),title="Survey", name_leg = "Liked the show?",
 dirac_kpca$plot
 ```
 
-<img src="man/figures/README-example-1.png" alt="Dirac kernel PCA." width="65%" />
+<img src="man/figures/README-example-1.png" alt="Dirac kernel PCA. " width="65%" />
 
 You can customize your kernel PCA plot: apart from picking which
 principal components you want to display (in the example: PC1 and PC2),

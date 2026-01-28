@@ -1,3 +1,9 @@
+# kerntools 1.2.1
+
+## Minor improvements and bug fixes
+
+* 'Spectrum()' and 'aggregate_imp()' no longer rely on the defunct function 'dplyr::id()' (@DavisVaughan, #2).
+
 # kerntools 1.2.0
 
 ## Major changes

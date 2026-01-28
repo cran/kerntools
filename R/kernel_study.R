@@ -95,7 +95,7 @@ heatK <- function(K,cos.norm=FALSE,title=NULL,color=c("red","yellow"),name_leg=N
 #'
 #' @references Belanche-Muñoz, L.A. and Wiejacha, M. (2023)
 #' Analysis of Kernel Matrices via the von Neumann Entropy and Its Relation to RVM Performances.
-#' Entropy, 25, 154. doi:10.3390/e25010154. \href{https://www.mdpi.com/1099-4300/25/1/154}{Link}
+#' Entropy, 25, 154. doi:10.3390/e25010154. \href{https://pmc.ncbi.nlm.nih.gov/articles/PMC9858626/}{Link}
 #'
 #' @param K Kernel matrix (class "matrix").
 #'

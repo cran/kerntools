@@ -61,7 +61,7 @@ The most basic kernel function is the dot product of two real vectors (see [Line
 
 $$x → φ(x)$$
 $$k(x_i , x_j ) = <φ(x_i),φ(x_j)>$$
-$φ(x)$ maps an object from the original (input) space to the so-called *feature space*. This feature space typically has a higher dimension than the original space (other times it has the same dimension) and it's endowed with an inner product. However, all the process happens "under the hood": the kernel function uses this mapping without telling so (recall that the objects' explicit representations are never used). Sometimes, even knowing the feature space associated to a given kernel can be tricky. However, this take avoids the computational cost of 1) explicitly mapping the dataset into feature space (which sometimes can be *very* high dimensional) + 2) computing the inner product there: the kernel conflates the two in a single step, which is known as the *kernel trick*. By the way, this also allows solving nonlinear problems using linear methods: the kernel takes the original data onto a higher dimensional space where it can be operated in a linear way with inner products. (A visual example of this can be found [here](https://es.m.wikipedia.org/wiki/Archivo:Kernel_trick_idea.svg)).
+$φ(x)$ maps an object from the original (input) space to the so-called *feature space*. This feature space typically has a higher dimension than the original space (other times it has the same dimension) and it's endowed with an inner product. However, all the process happens "under the hood": the kernel function uses this mapping without telling so (recall that the objects' explicit representations are never used). Sometimes, even knowing the feature space associated to a given kernel can be tricky. However, this take avoids the computational cost of 1) explicitly mapping the dataset into feature space (which sometimes can be *very* high dimensional) + 2) computing the inner product there: the kernel conflates the two in a single step, which is known as the *kernel trick*. By the way, this also allows solving nonlinear problems using linear methods: the kernel takes the original data onto a higher dimensional space where it can be operated in a linear way with inner products. (A visual example of this can be found [here](https://es.wikipedia.org/wiki/Archivo:Kernel_trick_idea.svg)).
 
 
 ## Kernels for real vectors
@@ -793,6 +793,6 @@ Now, to compute the $\chi^2$ kernel, we can type:
 Chi2(documents,g=0.1)
 ```
 
-`Chi2(...,g)` should be chosen by the user. With $\gamma=0.1$, the similarity between documents 1 and 2 is almost 0.50. If `Chi2(...,g=NULL)`, we obtain instead the LeCam distance (see [On Measures of Entropy and Information](https://threeplusone.com/pubs/on_information.pdf).
+`Chi2(...,g)` should be chosen by the user. With $\gamma=0.1$, the similarity between documents 1 and 2 is almost 0.50. If `Chi2(...,g=NULL)`, we obtain instead the LeCam distance, which is the square root of the LeCam divergence (see Eq. 6 [here]](https://ojs.aaai.org/index.php/AAAI/article/view/26196)).
 
 Finally, `kerntools`'s does not compute the feature space of the $\chi^2$ kernel.
